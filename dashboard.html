@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AppLens Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0f0f23; color: #fff; }
+    .card { background: #1a1a3e; border-radius: 12px; }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">🔬 AppLens Dashboard</h1>
+      <p class="text-gray-400">AI-Powered App Review - Sessions auto-captured from SDK</p>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="bg-indigo-900/30 border border-indigo-600 rounded-lg p-4 mb-6 flex items-center justify-between">
+      <div>
+        <span class="text-indigo-400 font-semibold">Listening for apps...</span>
+        <span class="text-gray-400 text-sm ml-2">SDK automatically sends data when integrated</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+        <span class="text-green-400 text-sm">API Connected</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="card p-4">
+        <div class="text-2xl font-bold" id="sessionCount">0</div>
+        <div class="text-gray-400 text-sm">Active Sessions</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-2xl font-bold" id="screenCount">0</div>
+        <div class="text-gray-400 text-sm">Screens Captured</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-2xl font-bold" id="elementCount">0</div>
+        <div class="text-gray-400 text-sm">Elements Tracked</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-2xl font-bold" id="issueCount">0</div>
+        <div class="text-gray-400 text-sm">Issues Found</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-4 mb-6 border-b border-gray-700 pb-4">
+      <button onclick="showTab('sessions')" class="tab-btn text-indigo-400 font-semibold" data-tab="sessions">Sessions</button>
+      <button onclick="showTab('screens')" class="tab-btn text-gray-400" data-tab="screens">Screens</button>
+      <button onclick="showTab('elements')" class="tab-btn text-gray-400" data-tab="elements">Elements</button>
+      <button onclick="showTab('issues')" class="tab-btn text-gray-400" data-tab="issues">Issues</button>
+    </div>
+
+    <!-- Sessions Tab -->
+    <div id="sessions-tab" class="tab-content">
+      <div class="card p-4">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-gray-400 text-sm">
+              <th class="pb-3">Session ID</th>
+              <th class="pb-3">App ID</th>
+              <th class="pb-3">Status</th>
+              <th class="pb-3">Started</th>
+              <th class="pb-3">Screens</th>
+            </tr>
+          </thead>
+          <tbody id="sessionsList">
+            <tr><td colspan="5" class="text-gray-500 py-4">No sessions yet - integrate SDK into your app!</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Screens Tab -->
+    <div id="screens-tab" class="tab-content hidden">
+      <div class="card p-4">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-gray-400 text-sm">
+              <th class="pb-3">Screen Name</th>
+              <th class="pb-3">Session</th>
+              <th class="pb-3">Elements</th>
+              <th class="pb-3">Time</th>
+            </tr>
+          </thead>
+          <tbody id="screensList">
+            <tr><td colspan="4" class="text-gray-500 py-4">No screens captured yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Elements Tab -->
+    <div id="elements-tab" class="tab-content hidden">
+      <div class="card p-4">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-gray-400 text-sm">
+              <th class="pb-3">Element ID</th>
+              <th class="pb-3">Type</th>
+              <th class="pb-3">Label</th>
+              <th class="pb-3">Screen</th>
+            </tr>
+          </thead>
+          <tbody id="elementsList">
+            <tr><td colspan="4" class="text-gray-500 py-4">No elements tracked yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Issues Tab -->
+    <div id="issues-tab" class="tab-content hidden">
+      <div class="card p-4">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-gray-400 text-sm">
+              <th class="pb-3">Type</th>
+              <th class="pb-3">Description</th>
+              <th class="pb-3">Severity</th>
+              <th class="pb-3">Status</th>
+            </tr>
+          </thead>
+          <tbody id="issuesList">
+            <tr><td colspan="4" class="text-gray-500 py-4">No issues reported yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Connection Settings -->
+    <div class="mt-8 pt-6 border-t border-gray-800">
+      <div class="flex items-center gap-4">
+        <span class="text-gray-400">API URL:</span>
+        <input type="text" id="apiUrl" value="http://localhost:3002" class="bg-gray-800 px-3 py-2 rounded text-sm w-64" onchange="updateApiUrl()">
+        <button onclick="loadData()" class="bg-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-600">Refresh</button>
+        <span id="apiStatus" class="text-green-400 text-sm ml-4">Connected</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let apiUrl = 'http://localhost:3002';
+    
+    function showTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('text-indigo-400');
+        el.classList.add('text-gray-400');
+      });
+      document.getElementById(tab + '-tab').classList.remove('hidden');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('text-indigo-400');
+      document.querySelector(`[data-tab="${tab}"]`).classList.remove('text-gray-400');
+    }
+
+    function updateApiUrl() {
+      apiUrl = document.getElementById('apiUrl').value;
+      loadData();
+    }
+
+    async function loadData() {
+      try {
+        const [sessionsRes, screensRes, elementsRes, issuesRes] = await Promise.all([
+          fetch(`${apiUrl}/api/sessions`).catch(() => ({ json: () => [] })),
+          fetch(`${apiUrl}/api/screens`).catch(() => ({ json: () => [] })),
+          fetch(`${apiUrl}/api/elements`).catch(() => ({ json: () => [] })),
+          fetch(`${apiUrl}/api/issues`).catch(() => ({ json: () => [] }))
+        ]);
+
+        const sessions = await sessionsRes.json();
+        const screens = await screensRes.json();
+        const elements = await elementsRes.json();
+        const issues = await issuesRes.json();
+
+        document.getElementById('sessionCount').textContent = sessions.length;
+        document.getElementById('screenCount').textContent = screens.length;
+        document.getElementById('elementCount').textContent = elements.length;
+        document.getElementById('issueCount').textContent = issues.length;
+
+        // Sessions
+        const sessionsList = document.getElementById('sessionsList');
+        if (sessions.length === 0) {
+          sessionsList.innerHTML = '<tr><td colspan="5" class="text-gray-500 py-4">No sessions yet - integrate SDK into your app!</td></tr>';
+        } else {
+          sessionsList.innerHTML = sessions.map(s => `
+            <tr class="border-t border-gray-700">
+              <td class="py-3 font-mono text-sm">${s.session_id?.substring(0, 12) || 'N/A'}</td>
+              <td class="py-3 text-gray-400 font-mono text-sm">${s.app_id?.substring(0, 8) || 'Unknown'}</td>
+              <td class="py-3"><span class="text-green-400">active</span></td>
+              <td class="py-3 text-gray-400">${new Date(s.created_at).toLocaleString()}</td>
+              <td class="py-3 text-gray-400">${screens.filter(sc => sc.session_id === s.session_id).length}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Screens
+        const screensList = document.getElementById('screensList');
+        if (screens.length === 0) {
+          screensList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No screens captured - use SDK trackScreen()</td></tr>';
+        } else {
+          screensList.innerHTML = screens.map(s => `
+            <tr class="border-t border-gray-700">
+              <td class="py-3 font-semibold">${s.screen_name}</td>
+              <td class="py-3 text-gray-400 font-mono text-xs">${s.session_id?.substring(0, 8) || 'N/A'}</td>
+              <td class="py-3 text-gray-400">${elements.filter(e => e.screen_name === s.screen_name).length}</td>
+              <td class="py-3 text-gray-400">${new Date(s.created_at).toLocaleTimeString()}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Elements
+        const elementsList = document.getElementById('elementsList');
+        if (elements.length === 0) {
+          elementsList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No elements tracked - use SDK trackElement()</td></tr>';
+        } else {
+          elementsList.innerHTML = elements.map(e => `
+            <tr class="border-t border-gray-700">
+              <td class="py-3 font-mono text-sm">${e.element_id}</td>
+              <td class="py-3"><span class="bg-gray-700 px-2 py-1 rounded text-xs">${e.element_type}</span></td>
+              <td class="py-3">${e.element_label || '-'}</td>
+              <td class="py-3 text-gray-400">${e.screen_name || '-'}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Issues
+        const issuesList = document.getElementById('issuesList');
+        if (issues.length === 0) {
+          issuesList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No issues detected yet</td></tr>';
+        } else {
+          issuesList.innerHTML = issues.map(i => `
+            <tr class="border-t border-gray-700">
+              <td class="py-3">${i.type || 'bug'}</td>
+              <td class="py-3">${i.description || '-'}</td>
+              <td class="py-3"><span class="px-2 py-1 rounded text-xs ${i.severity === 'critical' ? 'bg-red-900 text-red-400' : i.severity === 'medium' ? 'bg-yellow-900 text-yellow-400' : 'bg-gray-700'}">${i.severity || 'low'}</span></td>
+              <td class="py-3 text-gray-400">${i.status || 'open'}</td>
+            </tr>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Error:', err);
+        document.getElementById('apiStatus').textContent = 'Error';
+        document.getElementById('apiStatus').className = 'text-red-400 text-sm ml-4';
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 3000);
+  </script>
+</body>
+</html>

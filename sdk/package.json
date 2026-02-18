@@ -1,0 +1,11 @@
+{
+  "name": "@applens/react-native",
+  "version": "1.0.0",
+  "description": "AppLens SDK for React Native - AI-powered app review",
+  "main": "index.js",
+  "peerDependencies": {
+    "react-native": ">=0.60.0"
+  },
+  "keywords": ["applens", "react-native", "sdk", "ai", "review", "testing"],
+  "license": "MIT"
+}
