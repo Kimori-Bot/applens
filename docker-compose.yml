@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  applens:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"   # API server
+      - "3005:3005"   # Dashboard (served by Express)
+    environment:
+      - PORT=3002
+      - DASHBOARD_PORT=3005
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for persistent session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:

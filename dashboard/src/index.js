@@ -69,7 +69,7 @@ function Dashboard() {
   const [sessions, setSessions] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
   const [sessionActive, setSessionActive] = useState(false);
-  const [appId, setAppId] = useState('');
+  const [appId, setAppId] = useState('tip-calculator');
   const [orgId, setOrgId] = useState('');
   
   // Data state

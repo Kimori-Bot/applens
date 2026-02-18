@@ -10,7 +10,15 @@ const path = require('path');
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Increased for base64 images
+app.use(express.json({ limit: '50mb' }));
+
+// Serve dashboard static files
+app.use(express.static(path.join(__dirname, '..')));
+
+// Serve dashboard.html at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'dashboard.html'));
+});
 
 // In-memory storage
 const memoryStore = {
@@ -44,6 +52,26 @@ const formatDate = (date) => new Date(date).toISOString().split('T')[0];
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Get sessions for a specific app (for dashboard)
+app.get('/api/app/:appId/sessions', (req, res) => {
+  const { appId } = req.params;
+  
+  const sessions = memoryStore.sessions
+    .filter(s => s.app_id === appId)
+    .map(s => ({
+      id: s.session_id,
+      app_id: s.app_id,
+      status: s.status,
+      started_at: s.started_at,
+      ended_at: s.ended_at,
+      duration: getSessionDuration(s),
+      screens_count: memoryStore.screens.filter(sc => sc.session_id === s.session_id).length,
+      elements_count: memoryStore.elements.filter(e => e.session_id === s.session_id).length,
+    }));
+  
+  res.json(sessions);
 });
 
 // ============ SCREENSHOT ENDPOINTS ============
@@ -276,9 +304,13 @@ app.post('/api/session/start', async (req, res) => {
   try {
     const { sessionId, appId, organizationId } = req.body;
     
+    // If no sessionId provided, use appId as sessionId for simpler flow
+    const id = sessionId || appId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const sessionRecord = {
-      id: sessionId,
-      app_id: appId,
+      id: id,
+      session_id: id, // Store both for compatibility
+      app_id: appId || 'unknown',
       organization_id: organizationId,
       status: 'active',
       started_at: new Date(),
@@ -287,7 +319,7 @@ app.post('/api/session/start', async (req, res) => {
     };
     
     // Check if session already exists
-    const existing = memoryStore.sessions.find(s => s.id === sessionId);
+    const existing = memoryStore.sessions.find(s => s.id === id || s.session_id === id);
     if (existing) {
       existing.status = 'active';
       existing.started_at = new Date();
@@ -816,6 +848,41 @@ Respond ONLY with valid JSON:`;
     console.error('AI rating error:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// ============ TEST MODE ENDPOINTS ============
+// For AI-controlled testing
+
+// Store pending commands for apps in test mode
+const testCommands = {};
+
+// Get pending commands for a session
+app.get('/api/test/commands', (req, res) => {
+  const { sessionId } = req.query;
+  const commands = testCommands[sessionId] || [];
+  // Clear after returning
+  testCommands[sessionId] = [];
+  res.json({ commands });
+});
+
+// Send command to app in test mode
+app.post('/api/test/command', (req, res) => {
+  const { sessionId, appId, command } = req.body;
+  if (!sessionId || !command) {
+    return res.status(400).json({ error: 'sessionId and command required' });
+  }
+  if (!testCommands[sessionId]) {
+    testCommands[sessionId] = [];
+  }
+  testCommands[sessionId].push({ ...command, timestamp: Date.now() });
+  res.json({ success: true });
+});
+
+// Receive command result from app
+app.post('/api/test/commandResult', (req, res) => {
+  const { sessionId, appId, result } = req.body;
+  console.log('[Test Mode] Command result:', result);
+  res.json({ success: true });
 });
 
 // ============ DEBUG ENDPOINT ============
