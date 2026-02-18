@@ -482,9 +482,12 @@ export default function App() {'{'}<br>
             `).join('');
           }
           
+          // Use the data as-is since API already provides the full data URL (data:image/png;base64,...)
+          const imgSrc = screenshot.data.startsWith('data:') ? screenshot.data : `data:image/png;base64,${screenshot.data}`;
+          
           viewer.innerHTML = `
             <div class="screenshot-container" onclick="handleScreenshotClick(event)">
-              <img src="data:image/jpeg;base64,${screenshot.data}" 
+              <img src="${imgSrc}" 
                    style="max-width: 100%; max-height: 400px; display: block;"
                    id="screenshotImage">
               ${markersHtml}
