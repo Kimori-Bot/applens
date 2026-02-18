@@ -11,34 +11,82 @@ AppLens is an SDK that makes your mobile app observable - so AI agents can navig
 ```bash
 # Add SDK to your app
 npm install @applens/react-native
+
+# Install peer dependency for screenshots (optional)
+npm install react-native-view-shot
 ```
 
 ```tsx
-import { AppLensProvider } from '@applens/react-native';
+import { AppLensProvider, useAppLens } from '@applens/react-native';
 
 function App() {
   return (
-    <AppLensProvider apiUrl="http://YOUR_SERVER:3002">
+    <AppLensProvider
+      config={{
+        apiUrl: 'http://YOUR_SERVER:3002',
+        appId: 'your-app-id',
+        autoTrack: true,
+        autoCaptureScreenshots: true,
+      }}
+    >
       <YourApp />
     </AppLensProvider>
   );
 }
 ```
 
-Track screens and elements:
-```tsx
-import { useAppLens } from '@applens/react-native';
+### Track Screens
 
+```tsx
 function HomeScreen() {
-  const { trackScreen, trackElement } = useAppLens();
+  const { trackScreen } = useAppLens();
   
   useEffect(() => {
     trackScreen('Home');
   }, []);
   
+  return <YourHomeContent />;
+}
+```
+
+### Capture Screenshots
+
+```tsx
+import { ScreenCapture, useAppLens } from '@applens/react-native';
+
+function MyScreen() {
+  const { takeScreenshot } = useAppLens();
+  
+  const handleCapture = async () => {
+    const screenshot = await takeScreenshot();
+    console.log('Captured:', screenshot?.id);
+  };
+  
   return (
-    <TouchableOpacity onPress={() => trackElement('submit-btn', 'button', 'Submit')}>
-      <Text>Submit</Text>
+    <ScreenCapture>
+      <YourContent />
+    </ScreenCapture>
+  );
+}
+```
+
+### Track Elements
+
+```tsx
+import { TrackableTouchable, TrackableText } from '@applens/react-native';
+
+// Auto-tracks taps!
+<TrackableTouchable id="submit-btn" label="Submit Form">
+  <Text>Submit</Text>
+</TrackableTouchable>
+
+// Or manual tracking
+function MyComponent() {
+  const { trackElement } = useAppLens();
+  
+  return (
+    <TouchableOpacity onPress={() => trackElement('btn-1', 'button', 'Click me')}>
+      <Text>Click me</Text>
     </TouchableOpacity>
   );
 }
@@ -48,29 +96,19 @@ function HomeScreen() {
 
 - **SDK** (`/sdk`) - React Native SDK
 - **Server** (`/server`) - Node.js API
-- **Dashboard** (`/dashboard.html`) - Web viewer
+- **Dashboard** (`dashboard.html`) - Web viewer
 
 ## Running
 
 ```bash
 # Start API server
-cd server && npm install && npm start
+cd server && npm start
 
-# Open dashboard
-# Navigate to dashboard.html or serve it
+# Open dashboard - navigate to dashboard.html in browser
+# Or serve with: npx serve .
 ```
 
-## Week 2 Features (In Progress)
-
-- Real screenshot capture
-- Human review with issue marking
-- Export reports
-- Better session management
-
-## Pricing
-
-- Free: 10 reviews/month
-- Pro: $79/month
-- Enterprise: Custom
-
-See FINANCE_PLAN.md for details.
+The dashboard:
+- Auto-refreshes every 3 seconds
+- Shows screenshots with click-to-mark issues
+- Export to JSON or Markdown reports

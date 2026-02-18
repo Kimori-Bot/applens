@@ -406,30 +406,57 @@ export const useAppLens = () => {
 
 /**
  * ScreenCapture - A component that wraps content for screenshot capture
+ * Use with useAppLens hook to capture references
  */
-export const ScreenCapture = ({ children, style, ...props }) => {
-  const { takeScreenshot, getComponentTree } = useAppLens();
+export const ScreenCapture = React.forwardRef(({ children, style, options = {} }, ref) => {
+  const { mainViewRef } = useAppLens();
+  
+  // Combine provided ref with AppLens ref
+  const combinedRef = (node) => {
+    // Call the provided ref
+    if (typeof ref === 'function') {
+      ref(node);
+    } else if (ref && typeof ref === 'object') {
+      ref.current = node;
+    }
+    // Store in AppLens
+    if (mainViewRef) {
+      mainViewRef.current = node;
+    }
+  };
   
   // If ViewShot is available, use it
   if (ViewShot) {
     return (
       <ViewShot
-        ref={(ref) => {
-          const { mainViewRef } = useAppLens();
-          if (mainViewRef) mainViewRef.current = ref;
-        }}
+        ref={combinedRef}
         style={style}
-        options={{ format: 'jpg', quality: 0.8 }}
-        {...props}
+        options={{ format: 'jpg', quality: 0.8, result: 'base64', ...options }}
       >
         {children}
       </ViewShot>
     );
   }
   
-  // Fallback to regular View
+  // Fallback to regular View with ref
   return (
-    <View style={style} {...props}>
+    <View ref={combinedRef} style={style}>
+      {children}
+    </View>
+  );
+});
+
+ScreenCapture.displayName = 'ScreenCapture';
+
+/**
+ * CaptureView - A simple View wrapper that can be captured
+ * Use with useAppLens() hook's takeScreenshot() method
+ */
+export const CaptureView = ({ children, style, ...props }) => {
+  const { mainViewRef } = useAppLens();
+  
+  return (
+    <View ref={mainViewRef} style={style} {...props}>
       {children}
     </View>
   );
@@ -501,7 +528,19 @@ export default {
   AppLensProvider,
   useAppLens,
   ScreenCapture,
+  CaptureView,
   TrackableView,
   TrackableText,
   TrackableTouchable,
+};
+
+// Utility hook for easy screenshot capture
+// Returns a ref you can attach to any View
+export const useAppLensCapture = () => {
+  const { mainViewRef, takeScreenshot } = useAppLens();
+  
+  return {
+    captureRef: mainViewRef,
+    capture: () => takeScreenshot(),
+  };
 };

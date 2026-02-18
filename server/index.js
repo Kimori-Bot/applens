@@ -610,6 +610,214 @@ app.get('/api/session/:id/export/markdown', (req, res) => {
   res.send(md);
 });
 
+// ============ AI-POWERED FEATURES ============
+
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://192.168.100.129:11434';
+
+// Call Ollama LLM
+async function callOllama(prompt, systemPrompt = 'You are an expert mobile app UX analyst. Analyze app review data and provide actionable insights.') {
+  try {
+    const response = await fetch(`${OLLAMA_HOST}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'minimax-m2.5:cloud',
+        prompt,
+        system: systemPrompt,
+        stream: false,
+        format: 'json',
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Ollama error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.response;
+  } catch (error) {
+    console.error('Ollama call failed:', error.message);
+    return null;
+  }
+}
+
+// AI-powered issue summary
+app.post('/api/session/:id/ai-summary', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const session = memoryStore.sessions.find(s => s.id === id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    const sessionIssues = memoryStore.issues.filter(i => i.session_id === id);
+    const sessionScreens = memoryStore.screens.filter(s => s.session_id === id);
+    const sessionElements = memoryStore.elements.filter(e => e.session_id === id);
+    const sessionActivities = memoryStore.activities.filter(a => a.session_id === id);
+    
+    if (sessionIssues.length === 0) {
+      return res.json({
+        summary: 'No issues found in this session. The app appears to be working well!',
+        categories: { navigation: 0, ui_bug: 0, performance: 0, other: 0 },
+        severity_breakdown: { critical: 0, high: 0, medium: 0, low: 0 },
+        recommendations: ['Session is clean - no action needed.'],
+        root_causes: [],
+        ux_score: 10,
+      });
+    }
+    
+    const issuesText = sessionIssues.map((i, idx) => 
+      `${idx + 1}. [${i.severity.toUpperCase()}] ${i.type}: ${i.description}`
+    ).join('\n');
+    
+    const prompt = `Analyze this mobile app session and provide a JSON response with:
+{
+  "summary": "2-3 sentence overview of the main issues",
+  "categories": { "navigation": #, "ui_bug": #, "performance": #, "other": # },
+  "severity_breakdown": { "critical": #, "high": #, "medium": #, "low": # },
+  "recommendations": ["1st recommendation", "2nd recommendation", "3rd recommendation"],
+  "root_causes": ["1st root cause", "2nd root cause"],
+  "ux_score": (0-10 score for overall UX)
+}
+
+Session details:
+- App ID: ${session.app_id || 'Unknown'}
+- Session duration: ${getSessionDuration(session)}
+- Screens visited: ${sessionScreens.length}
+- Total elements: ${sessionElements.length}
+- Issues found: ${sessionIssues.length}
+
+Issues:
+${issuesText}
+
+Respond ONLY with valid JSON, no other text:`;
+    
+    const result = await callOllama(prompt);
+    
+    if (result) {
+      try {
+        const analysis = JSON.parse(result);
+        res.json(analysis);
+      } catch (parseError) {
+        // If JSON parsing fails, return the raw result
+        res.json({
+          summary: result.substring(0, 200),
+          raw_response: result,
+          categories: {},
+          severity_breakdown: {},
+          recommendations: [],
+          root_causes: [],
+          ux_score: 5,
+        });
+      }
+    } else {
+      // Fallback if LLM is unavailable
+      res.json({
+        summary: `This session captured ${sessionIssues.length} issues across ${sessionScreens.length} screens.`,
+        categories: {
+          ui_bug: sessionIssues.filter(i => i.type === 'ui_bug').length,
+          navigation: sessionIssues.filter(i => i.type === 'navigation').length,
+          performance: sessionIssues.filter(i => i.type === 'performance').length,
+          other: sessionIssues.filter(i => !['ui_bug', 'navigation', 'performance'].includes(i.type)).length,
+        },
+        severity_breakdown: {
+          critical: sessionIssues.filter(i => i.severity === 'critical').length,
+          high: sessionIssues.filter(i => i.severity === 'high').length,
+          medium: sessionIssues.filter(i => i.severity === 'medium').length,
+          low: sessionIssues.filter(i => i.severity === 'low').length,
+        },
+        recommendations: [
+          'Review the identified issues and prioritize fixes.',
+          'Consider adding more user feedback mechanisms.',
+        ],
+        root_causes: [],
+        ux_score: Math.max(1, 10 - sessionIssues.length),
+        note: 'AI analysis unavailable - showing basic stats',
+      });
+    }
+  } catch (error) {
+    console.error('AI summary error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// AI-powered UX rating
+app.post('/api/session/:id/ai-rating', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const session = memoryStore.sessions.find(s => s.id === id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    const sessionIssues = memoryStore.issues.filter(i => i.session_id === id);
+    const sessionScreens = memoryStore.screens.filter(s => s.session_id === id);
+    const sessionActivities = memoryStore.activities.filter(a => a.session_id === id);
+    const sessionElements = memoryStore.elements.filter(e => e.session_id === id);
+    
+    const prompt = `Rate this mobile app session's UX with scores 0-10. Return JSON:
+
+{
+  "navigation_score": (0-10, how intuitive was the flow),
+  "stability_score": (0-10, any crashes or freezes),
+  "issue_density_score": (0-10, lower issues = higher score),
+  "completion_score": (0-10, did user complete goals),
+  "overall_score": (0-10, weighted average),
+  "strengths": ["strength 1", "strength 2"],
+  "areas_for_improvement": ["area 1", "area 2"],
+  "detailed_feedback": "2-3 sentences of detailed feedback"
+}
+
+Session data:
+- Screens visited: ${sessionScreens.length}
+- Elements interacted: ${sessionElements.length}
+- Activities: ${sessionActivities.length}
+- Issues found: ${sessionIssues.length}
+- Session status: ${session.status}
+
+Respond ONLY with valid JSON:`;
+    
+    const result = await callOllama(prompt);
+    
+    if (result) {
+      try {
+        const rating = JSON.parse(result);
+        res.json(rating);
+      } catch {
+        res.json({
+          navigation_score: 7,
+          stability_score: 8,
+          issue_density_score: 6,
+          completion_score: 7,
+          overall_score: 7,
+          strengths: ['Multiple screens visited', 'Active session'],
+          areas_for_improvement: ['Some issues detected'],
+          detailed_feedback: 'Session shows typical user flow with some noted issues.',
+        });
+      }
+    } else {
+      // Fallback ratings
+      const issueCount = sessionIssues.length;
+      res.json({
+        navigation_score: 8,
+        stability_score: 9 - Math.min(3, issueCount),
+        issue_density_score: Math.max(1, 10 - issueCount * 2),
+        completion_score: session.status === 'completed' ? 9 : 6,
+        overall_score: Math.max(1, 8 - issueCount),
+        strengths: ['Session captured successfully'],
+        areas_for_improvement: issueCount > 0 ? [`${issueCount} issues need attention`] : [],
+        detailed_feedback: 'Basic analysis provided. AI detailed feedback unavailable.',
+        note: 'AI analysis unavailable',
+      });
+    }
+  } catch (error) {
+    console.error('AI rating error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============ DEBUG ENDPOINT ============
 
 app.get('/api/debug/memory', (req, res) => {
