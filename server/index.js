@@ -8,6 +8,9 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
+// Auth routes
+const authRoutes = require('./src/routes/auth');
+
 // Storage: supports memory, file, or supabase
 const { getStorage, initStorage, STORAGE_TYPE } = require('./storage-manager');
 
@@ -70,6 +73,9 @@ const formatDate = (date) => new Date(date).toISOString().split('T')[0];
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 // Get sessions for a specific app (for dashboard)
 app.get('/api/app/:appId/sessions', (req, res) => {
@@ -1004,6 +1010,192 @@ app.get('/api/session/:sessionId/recordings', (req, res) => {
     }));
   
   res.json(recordings);
+});
+
+// ============ AUTOMATION ENDPOINTS ============
+
+// Automation state (in-memory)
+const automationState = {
+  isRunning: false,
+  sessionId: null,
+  appId: null,
+  currentScreen: null,
+  totalActions: 0,
+  successfulActions: 0,
+  failedActions: 0,
+  visitedScreens: [],
+  startedAt: null,
+  actionHistory: []
+};
+
+// Start automation session
+app.post('/api/automation/start', async (req, res) => {
+  try {
+    const { appId, appPackage, appActivity, config } = req.body;
+    
+    if (automationState.isRunning) {
+      return res.status(400).json({ error: 'Automation already running' });
+    }
+    
+    // Initialize automation session
+    automationState.isRunning = true;
+    automationState.sessionId = `session_${Date.now()}`;
+    automationState.appId = appId;
+    automationState.startedAt = new Date();
+    automationState.totalActions = 0;
+    automationState.successfulActions = 0;
+    automationState.failedActions = 0;
+    automationState.visitedScreens = [];
+    automationState.actionHistory = [];
+    
+    console.log(`[Automation] Started for app: ${appId}`);
+    
+    res.json({
+      success: true,
+      sessionId: automationState.sessionId,
+      appId: automationState.appId,
+      status: 'running'
+    });
+  } catch (error) {
+    console.error('Automation start error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stop automation session
+app.post('/api/automation/stop', async (req, res) => {
+  try {
+    if (!automationState.isRunning) {
+      return res.status(400).json({ error: 'No automation running' });
+    }
+    
+    const report = generateAutomationReport();
+    
+    // Reset state
+    automationState.isRunning = false;
+    
+    console.log(`[Automation] Stopped. Actions: ${automationState.totalActions}`);
+    
+    res.json({
+      success: true,
+      report
+    });
+  } catch (error) {
+    console.error('Automation stop error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Pause automation
+app.post('/api/automation/pause', (req, res) => {
+  if (!automationState.isRunning) {
+    return res.status(400).json({ error: 'No automation running' });
+  }
+  automationState.isRunning = false;
+  res.json({ success: true, status: 'paused' });
+});
+
+// Resume automation
+app.post('/api/automation/resume', (req, res) => {
+  if (!automationState.sessionId) {
+    return res.status(400).json({ error: 'No session to resume' });
+  }
+  automationState.isRunning = true;
+  res.json({ success: true, status: 'running' });
+});
+
+// Get automation status
+app.get('/api/automation/status', (req, res) => {
+  res.json({
+    sessionId: automationState.sessionId,
+    appId: automationState.appId,
+    status: automationState.isRunning ? 'running' : 'idle',
+    currentScreen: automationState.currentScreen,
+    totalActions: automationState.totalActions,
+    successfulActions: automationState.successfulActions,
+    failedActions: automationState.failedActions,
+    visitedScreens: automationState.visitedScreens.length,
+    uptime: automationState.startedAt ? Date.now() - new Date(automationState.startedAt).getTime() : undefined
+  });
+});
+
+// Get automation report
+app.get('/api/automation/report', (req, res) => {
+  const report = generateAutomationReport();
+  res.json(report);
+});
+
+// Helper: Generate automation report
+function generateAutomationReport() {
+  const duration = automationState.startedAt 
+    ? Date.now() - new Date(automationState.startedAt).getTime()
+    : 0;
+    
+  const screenCounts = {};
+  for (const screen of automationState.visitedScreens) {
+    screenCounts[screen] = (screenCounts[screen] || 0) + 1;
+  }
+  
+  const actionBreakdown = {};
+  for (const action of automationState.actionHistory) {
+    actionBreakdown[action.type] = (actionBreakdown[action.type] || 0) + 1;
+  }
+  
+  return {
+    sessionId: automationState.sessionId,
+    appId: automationState.appId,
+    startedAt: automationState.startedAt,
+    endedAt: new Date(),
+    duration,
+    totalActions: automationState.totalActions,
+    successfulActions: automationState.successfulActions,
+    failedActions: automationState.failedActions,
+    successRate: automationState.totalActions > 0 
+      ? (automationState.successfulActions / automationState.totalActions) * 100 
+      : 0,
+    screensVisited: Object.entries(screenCounts).map(([name, count]) => ({
+      name,
+      visitCount: count
+    })),
+    uniqueScreens: Object.keys(screenCounts).length,
+    actionBreakdown,
+    navigationPaths: [automationState.visitedScreens.join(' -> ')],
+    errors: automationState.actionHistory
+      .filter(a => !a.success)
+      .map(a => `Action ${a.type} failed: ${a.error}`)
+  };
+}
+
+// Record automation action (called by UI handler)
+app.post('/api/automation/action', (req, res) => {
+  const { action, success, newScreen, error } = req.body;
+  
+  automationState.totalActions++;
+  if (success) {
+    automationState.successfulActions++;
+  } else {
+    automationState.failedActions++;
+  }
+  
+  if (newScreen && !automationState.visitedScreens.includes(newScreen)) {
+    automationState.visitedScreens.push(newScreen);
+  }
+  
+  automationState.currentScreen = newScreen;
+  
+  automationState.actionHistory.push({
+    ...action,
+    success,
+    error,
+    timestamp: Date.now()
+  });
+  
+  // Keep history limited
+  if (automationState.actionHistory.length > 1000) {
+    automationState.actionHistory = automationState.actionHistory.slice(-500);
+  }
+  
+  res.json({ success: true });
 });
 
 // ============ DEBUG ENDPOINT ============

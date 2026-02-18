@@ -1,0 +1,1 @@
+{"version":3,"file":"back.d.ts","sourceRoot":"","sources":["../../../src/ui-handler/commands/back.ts"],"names":[],"mappings":"AAAA;;GAEG;AAGH,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,gBAAgB,CAAC;AAE7C,MAAM,WAAW,WAAW;IAC1B,KAAK,CAAC,EAAE,MAAM,CAAC;CAChB;AAED,wBAAgB,gBAAgB,CAAC,OAAO,GAAE,WAAgB,GAAG,MAAM,CAMlE;AAED,OAAO,EAAE,gBAAgB,IAAI,IAAI,EAAE,CAAC"}

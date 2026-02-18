@@ -1,0 +1,74 @@
+{
+  "name": "exploration-strategy",
+  "version": "1.0.0",
+  "description": "AI exploration strategy configuration for AppLens auto-navigation",
+  "strategy": {
+    "type": "hybrid",
+    "randomExploration": {
+      "enabled": true,
+      "weight": 0.3,
+      "maxConsecutiveRandom": 5
+    },
+    "smartExploration": {
+      "enabled": true,
+      "weight": 0.7,
+      "preferUnvisited": true,
+      "prioritizeInteractive": true
+    },
+    "depthFirst": {
+      "enabled": false,
+      "maxDepth": 10
+    },
+    "breadthFirst": {
+      "enabled": true,
+      "maxScreens": 50
+    }
+  },
+  "actionWeights": {
+    "tap": 0.6,
+    "swipeUp": 0.15,
+    "swipeDown": 0.1,
+    "swipeLeft": 0.075,
+    "swipeRight": 0.075,
+    "input": 0.05
+  },
+  "elementPriorities": {
+    "button": 1.0,
+    "link": 0.9,
+    "text": 0.3,
+    "input": 0.8,
+    "image": 0.2,
+    "listItem": 0.7,
+    "header": 0.1,
+    "tab": 0.85,
+    "menu": 0.75,
+    "drawer": 0.6
+  },
+  "filters": {
+    "excludeElements": [
+      "skip",
+      "close",
+      "cancel",
+      "back",
+      "dismiss"
+    ],
+    "minElementSize": 10,
+    "requireVisible": true,
+    "requireEnabled": true
+  },
+  "limits": {
+    "maxActionsPerSession": 500,
+    "maxTimePerSession": 3600000,
+    "maxRetries": 3,
+    "actionDelay": 1000,
+    "stateStabilityCheck": true,
+    "maxSameStateCount": 5
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "logActions": true,
+    "logDecisions": true,
+    "logErrors": true
+  }
+}
