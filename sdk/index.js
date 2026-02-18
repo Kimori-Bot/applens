@@ -1,13 +1,28 @@
 /**
  * AppLens SDK for React Native
- * AI-powered app review capabilities
+ * AI-powered app review capabilities - Week 2 Edition
+ * Features: Screenshot capture, auto-sessions, enhanced tracking
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
+
+// Try to import react-native-view-shot for screenshot capture
+let captureRef = null;
+let ViewShot = null;
+try {
+  const viewShot = require('react-native-view-shot');
+  ViewShot = viewShot.default || viewShot;
+  captureRef = viewShot.capture || viewShot.captureRef;
+} catch (e) {
+  console.log('react-native-view-shot not available - screenshots disabled');
+}
 
 // Context for AppLens
 const AppLensContext = createContext(null);
+
+// Generate unique IDs
+const generateId = (prefix = 'item') => `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 // Default configuration
 const defaultConfig = {
@@ -16,7 +31,32 @@ const defaultConfig = {
   organizationId: null,
   sessionId: null,
   autoTrack: true,
+  autoCaptureScreenshots: true,
+  screenshotInterval: 5000, // ms between screenshots
   debug: false,
+};
+
+/**
+ * Screenshot capture utility
+ */
+const captureScreenshot = async (viewRef, options = {}) => {
+  if (!captureRef || !viewRef) {
+    console.log('Screenshot capture not available');
+    return null;
+  }
+  
+  try {
+    const uri = await captureRef(viewRef, {
+      format: 'jpg',
+      quality: 0.8,
+      result: 'base64',
+      ...options,
+    });
+    return uri;
+  } catch (err) {
+    console.error('Screenshot capture failed:', err);
+    return null;
+  }
 };
 
 /**
@@ -27,15 +67,31 @@ export const AppLensProvider = ({ children, config = {} }) => {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [screens, setScreens] = useState([]);
   const [elements, setElements] = useState([]);
+  const [screenshots, setScreenshots] = useState([]);
   const [currentScreen, setCurrentScreen] = useState(null);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [sessionActivity, setSessionActivity] = useState([]);
   
   const configRef = useRef({ ...defaultConfig, ...config });
+  const screenshotTimerRef = useRef(null);
+  const mainViewRef = useRef(null);
 
-  // Generate a session ID if not provided
+  // Initialize session on mount
   useEffect(() => {
     if (!configRef.current.sessionId) {
-      configRef.current.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      configRef.current.sessionId = generateId('session');
     }
+    
+    // Auto-start session if enabled
+    if (configRef.current.autoTrack) {
+      startSession();
+    }
+    
+    return () => {
+      if (screenshotTimerRef.current) {
+        clearInterval(screenshotTimerRef.current);
+      }
+    };
   }, []);
 
   // Log debug messages
@@ -45,6 +101,136 @@ export const AppLensProvider = ({ children, config = {} }) => {
     }
   }, []);
 
+  // Record activity
+  const recordActivity = useCallback((type, data) => {
+    const activity = {
+      id: generateId('activity'),
+      type,
+      data,
+      timestamp: Date.now(),
+    };
+    setSessionActivity(prev => [...prev, activity]);
+    
+    // Send to API if session is active
+    if (isSessionActive && configRef.current.apiUrl) {
+      fetch(`${configRef.current.apiUrl}/api/activity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: configRef.current.sessionId,
+          appId: configRef.current.appId,
+          activity,
+        }),
+      }).catch(err => log('Failed to send activity:', err));
+    }
+  }, [isSessionActive, log]);
+
+  /**
+   * Start a review session - auto-creates session on server
+   */
+  const startSession = useCallback(() => {
+    const newSessionId = generateId('session');
+    configRef.current.sessionId = newSessionId;
+    setIsSessionActive(true);
+    setSessionStartTime(Date.now());
+    setSessionActivity([]);
+    setScreens([]);
+    setElements([]);
+    setScreenshots([]);
+    
+    log('Session started:', newSessionId);
+    recordActivity('session_start', { sessionId: newSessionId });
+
+    // Auto-create session on server
+    if (configRef.current.apiUrl) {
+      fetch(`${configRef.current.apiUrl}/api/session/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: newSessionId,
+          appId: configRef.current.appId,
+          organizationId: configRef.current.organizationId,
+        }),
+      }).catch(err => log('Failed to create session on server:', err));
+    }
+
+    // Start automatic screenshot capture
+    if (configRef.current.autoCaptureScreenshots && captureRef) {
+      screenshotTimerRef.current = setInterval(() => {
+        if (mainViewRef.current && isSessionActive) {
+          takeScreenshot();
+        }
+      }, configRef.current.screenshotInterval);
+    }
+
+    return newSessionId;
+  }, [log, recordActivity]);
+
+  /**
+   * Stop the review session
+   */
+  const stopSession = useCallback(() => {
+    setIsSessionActive(false);
+    
+    if (screenshotTimerRef.current) {
+      clearInterval(screenshotTimerRef.current);
+      screenshotTimerRef.current = null;
+    }
+    
+    recordActivity('session_end', { sessionId: configRef.current.sessionId });
+    log('Session stopped');
+
+    // End session on server
+    if (configRef.current.apiUrl && configRef.current.sessionId) {
+      fetch(`${configRef.current.apiUrl}/api/session/${configRef.current.sessionId}/end`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }).catch(err => log('Failed to end session on server:', err));
+    }
+  }, [log, recordActivity]);
+
+  /**
+   * Take a screenshot and send to server
+   */
+  const takeScreenshot = useCallback(async (viewRef = null) => {
+    const targetRef = viewRef || mainViewRef.current;
+    if (!targetRef) return null;
+    
+    try {
+      const uri = await captureScreenshot(targetRef);
+      if (!uri) return null;
+      
+      const screenshotData = {
+        id: generateId('screenshot'),
+        data: uri, // base64
+        timestamp: Date.now(),
+        screen: currentScreen,
+        sessionId: configRef.current.sessionId,
+      };
+      
+      setScreenshots(prev => [...prev, screenshotData]);
+      log('Screenshot captured');
+      
+      // Send to API
+      if (isSessionActive && configRef.current.apiUrl) {
+        fetch(`${configRef.current.apiUrl}/api/screenshot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: configRef.current.sessionId,
+            appId: configRef.current.appId,
+            screenshot: screenshotData,
+          }),
+        }).catch(err => log('Failed to send screenshot:', err));
+      }
+      
+      return screenshotData;
+    } catch (err) {
+      log('Screenshot error:', err);
+      return null;
+    }
+  }, [currentScreen, isSessionActive, log]);
+
   /**
    * trackScreen - Track a screen/view
    * @param {string} name - Screen name
@@ -52,7 +238,7 @@ export const AppLensProvider = ({ children, config = {} }) => {
   const trackScreen = useCallback((name) => {
     const timestamp = Date.now();
     const screenData = {
-      id: `screen_${timestamp}`,
+      id: generateId('screen'),
       name,
       timestamp,
       elements: [],
@@ -60,8 +246,14 @@ export const AppLensProvider = ({ children, config = {} }) => {
     
     setScreens(prev => [...prev, screenData]);
     setCurrentScreen(name);
+    recordActivity('screen_view', { screenName: name });
     
     log('Screen tracked:', name);
+    
+    // Take a screenshot when screen changes
+    if (configRef.current.autoCaptureScreenshots) {
+      setTimeout(() => takeScreenshot(), 500);
+    }
     
     // Send to API if session is active
     if (isSessionActive && configRef.current.apiUrl) {
@@ -77,7 +269,7 @@ export const AppLensProvider = ({ children, config = {} }) => {
     }
     
     return screenData;
-  }, [isSessionActive, log]);
+  }, [isSessionActive, log, recordActivity, takeScreenshot]);
 
   /**
    * trackElement - Track a UI element
@@ -88,7 +280,7 @@ export const AppLensProvider = ({ children, config = {} }) => {
   const trackElement = useCallback((id, type, label) => {
     const timestamp = Date.now();
     const elementData = {
-      id,
+      id: id || generateId('element'),
       type,
       label,
       timestamp,
@@ -96,6 +288,7 @@ export const AppLensProvider = ({ children, config = {} }) => {
     };
     
     setElements(prev => [...prev, elementData]);
+    recordActivity('element_interaction', { elementId: id, type, label });
     
     log('Element tracked:', id, type, label);
     
@@ -113,14 +306,13 @@ export const AppLensProvider = ({ children, config = {} }) => {
     }
     
     return elementData;
-  }, [isSessionActive, currentScreen, log]);
+  }, [isSessionActive, currentScreen, log, recordActivity]);
 
   /**
    * getComponentTree - Get the current component tree
    * @returns {Object} Component tree structure
    */
   const getComponentTree = useCallback(() => {
-    // Build a simple component tree from tracked elements
     const tree = {
       id: 'root',
       name: 'App',
@@ -145,21 +337,19 @@ export const AppLensProvider = ({ children, config = {} }) => {
   }, [screens, elements, log]);
 
   /**
-   * Start a review session
+   * Get session duration in human readable format
    */
-  const startSession = useCallback(() => {
-    setIsSessionActive(true);
-    configRef.current.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    log('Session started:', configRef.current.sessionId);
-  }, [log]);
-
-  /**
-   * Stop the review session
-   */
-  const stopSession = useCallback(() => {
-    setIsSessionActive(false);
-    log('Session stopped');
-  }, [log]);
+  const getSessionDuration = useCallback(() => {
+    if (!sessionStartTime) return '0s';
+    const duration = Date.now() - sessionStartTime;
+    const seconds = Math.floor(duration / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
+  }, [sessionStartTime]);
 
   /**
    * Clear all tracked data
@@ -167,7 +357,9 @@ export const AppLensProvider = ({ children, config = {} }) => {
   const clearData = useCallback(() => {
     setScreens([]);
     setElements([]);
+    setScreenshots([]);
     setCurrentScreen(null);
+    setSessionActivity([]);
     log('Data cleared');
   }, [log]);
 
@@ -176,16 +368,22 @@ export const AppLensProvider = ({ children, config = {} }) => {
     isSessionActive,
     screens,
     elements,
+    screenshots,
     currentScreen,
+    sessionStartTime,
+    sessionActivity,
     config: configRef.current,
+    mainViewRef,
     
     // Methods
     trackScreen,
     trackElement,
+    takeScreenshot,
     getComponentTree,
     startSession,
     stopSession,
     clearData,
+    getSessionDuration,
   };
 
   return (
@@ -204,6 +402,37 @@ export const useAppLens = () => {
     throw new Error('useAppLens must be used within an AppLensProvider');
   }
   return context;
+};
+
+/**
+ * ScreenCapture - A component that wraps content for screenshot capture
+ */
+export const ScreenCapture = ({ children, style, ...props }) => {
+  const { takeScreenshot, getComponentTree } = useAppLens();
+  
+  // If ViewShot is available, use it
+  if (ViewShot) {
+    return (
+      <ViewShot
+        ref={(ref) => {
+          const { mainViewRef } = useAppLens();
+          if (mainViewRef) mainViewRef.current = ref;
+        }}
+        style={style}
+        options={{ format: 'jpg', quality: 0.8 }}
+        {...props}
+      >
+        {children}
+      </ViewShot>
+    );
+  }
+  
+  // Fallback to regular View
+  return (
+    <View style={style} {...props}>
+      {children}
+    </View>
+  );
 };
 
 /**
@@ -271,6 +500,7 @@ export const TrackableTouchable = ({ id, label, type = 'button', children, style
 export default {
   AppLensProvider,
   useAppLens,
+  ScreenCapture,
   TrackableView,
   TrackableText,
   TrackableTouchable,

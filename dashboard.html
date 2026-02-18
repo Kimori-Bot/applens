@@ -3,135 +3,220 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AppLens Dashboard</title>
+  <title>AppLens Dashboard - Week 2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background: #0f0f23; color: #fff; }
     .card { background: #1a1a3e; border-radius: 12px; }
+    .marker { position: absolute; width: 24px; height: 24px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 100; }
+    .marker.issue { background: #ef4444; border: 2px solid #fff; animation: pulse 2s infinite; }
+    .marker.info { background: #3b82f6; border: 2px solid #fff; }
+    @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } }
+    .screenshot-container { position: relative; display: inline-block; }
+    .tab-btn { transition: all 0.2s; }
+    .loading { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="min-h-screen p-6">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold">🔬 AppLens Dashboard</h1>
-      <p class="text-gray-400">AI-Powered App Review - Sessions auto-captured from SDK</p>
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">🔬 AppLens Dashboard</h1>
+        <p class="text-gray-400">AI-Powered App Review - Week 2 Features</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="exportSession('json')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+          📥 Export JSON
+        </button>
+        <button onclick="exportSession('markdown')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+          📝 Export Report
+        </button>
+        <button onclick="loadData()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
+          🔄 Refresh
+        </button>
+      </div>
     </div>
 
     <!-- Status Banner -->
     <div class="bg-indigo-900/30 border border-indigo-600 rounded-lg p-4 mb-6 flex items-center justify-between">
       <div>
-        <span class="text-indigo-400 font-semibold">Listening for apps...</span>
-        <span class="text-gray-400 text-sm ml-2">SDK automatically sends data when integrated</span>
+        <span class="text-indigo-400 font-semibold">Listening for SDK connections...</span>
+        <span class="text-gray-400 text-sm ml-2">Auto-creates sessions when SDK connects</span>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-        <span class="text-green-400 text-sm">API Connected</span>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          <span class="text-green-400 text-sm">API Connected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Filter -->
+    <div class="card p-4 mb-6">
+      <div class="flex items-center gap-4 flex-wrap">
+        <div>
+          <label class="text-gray-400 text-sm block mb-1">Filter by Date</label>
+          <div class="flex items-center gap-2">
+            <input type="date" id="dateFrom" class="bg-gray-800 px-3 py-2 rounded text-sm" onchange="loadData()">
+            <span class="text-gray-500">to</span>
+            <input type="date" id="dateTo" class="bg-gray-800 px-3 py-2 rounded text-sm" onchange="loadData()">
+          </div>
+        </div>
+        <div>
+          <label class="text-gray-400 text-sm block mb-1">Session Status</label>
+          <select id="statusFilter" class="bg-gray-800 px-3 py-2 rounded text-sm" onchange="loadData()">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="ml-auto">
+          <span id="filterStatus" class="text-gray-500 text-sm">Showing all sessions</span>
+        </div>
       </div>
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-5 gap-4 mb-8">
       <div class="card p-4">
         <div class="text-2xl font-bold" id="sessionCount">0</div>
-        <div class="text-gray-400 text-sm">Active Sessions</div>
+        <div class="text-gray-400 text-sm">Sessions</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-2xl font-bold" id="activeCount">0</div>
+        <div class="text-gray-400 text-sm">Active</div>
       </div>
       <div class="card p-4">
         <div class="text-2xl font-bold" id="screenCount">0</div>
-        <div class="text-gray-400 text-sm">Screens Captured</div>
+        <div class="text-gray-400 text-sm">Screens</div>
       </div>
       <div class="card p-4">
         <div class="text-2xl font-bold" id="elementCount">0</div>
-        <div class="text-gray-400 text-sm">Elements Tracked</div>
+        <div class="text-gray-400 text-sm">Elements</div>
       </div>
       <div class="card p-4">
         <div class="text-2xl font-bold" id="issueCount">0</div>
-        <div class="text-gray-400 text-sm">Issues Found</div>
+        <div class="text-gray-400 text-sm">Issues</div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-4 mb-6 border-b border-gray-700 pb-4">
-      <button onclick="showTab('sessions')" class="tab-btn text-indigo-400 font-semibold" data-tab="sessions">Sessions</button>
-      <button onclick="showTab('screens')" class="tab-btn text-gray-400" data-tab="screens">Screens</button>
-      <button onclick="showTab('elements')" class="tab-btn text-gray-400" data-tab="elements">Elements</button>
-      <button onclick="showTab('issues')" class="tab-btn text-gray-400" data-tab="issues">Issues</button>
-    </div>
-
-    <!-- Sessions Tab -->
-    <div id="sessions-tab" class="tab-content">
-      <div class="card p-4">
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-gray-400 text-sm">
-              <th class="pb-3">Session ID</th>
-              <th class="pb-3">App ID</th>
-              <th class="pb-3">Status</th>
-              <th class="pb-3">Started</th>
-              <th class="pb-3">Screens</th>
-            </tr>
-          </thead>
-          <tbody id="sessionsList">
-            <tr><td colspan="5" class="text-gray-500 py-4">No sessions yet - integrate SDK into your app!</td></tr>
-          </tbody>
-        </table>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-3 gap-6">
+      <!-- Left: Sessions List -->
+      <div class="col-span-1">
+        <div class="card p-4">
+          <h3 class="text-lg font-semibold mb-4">📱 Sessions</h3>
+          <div id="sessionsList" class="space-y-2 max-h-96 overflow-y-auto">
+            <div class="text-gray-500 py-4 text-center">Loading sessions...</div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Screens Tab -->
-    <div id="screens-tab" class="tab-content hidden">
-      <div class="card p-4">
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-gray-400 text-sm">
-              <th class="pb-3">Screen Name</th>
-              <th class="pb-3">Session</th>
-              <th class="pb-3">Elements</th>
-              <th class="pb-3">Time</th>
-            </tr>
-          </thead>
-          <tbody id="screensList">
-            <tr><td colspan="4" class="text-gray-500 py-4">No screens captured yet</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- Center/Right: Details -->
+      <div class="col-span-2">
+        <!-- Tabs -->
+        <div class="flex gap-4 mb-4 border-b border-gray-700 pb-4">
+          <button onclick="showTab('screens')" class="tab-btn text-indigo-400 font-semibold" data-tab="screens">Screens</button>
+          <button onclick="showTab('screenshots')" class="tab-btn text-gray-400" data-tab="screenshots">📷 Screenshots</button>
+          <button onclick="showTab('elements')" class="tab-btn text-gray-400" data-tab="elements">Elements</button>
+          <button onclick="showTab('issues')" class="tab-btn text-gray-400" data-tab="issues">Issues</button>
+        </div>
 
-    <!-- Elements Tab -->
-    <div id="elements-tab" class="tab-content hidden">
-      <div class="card p-4">
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-gray-400 text-sm">
-              <th class="pb-3">Element ID</th>
-              <th class="pb-3">Type</th>
-              <th class="pb-3">Label</th>
-              <th class="pb-3">Screen</th>
-            </tr>
-          </thead>
-          <tbody id="elementsList">
-            <tr><td colspan="4" class="text-gray-500 py-4">No elements tracked yet</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <!-- Screens Tab -->
+        <div id="screens-tab" class="tab-content">
+          <div class="card p-4">
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-gray-400 text-sm">
+                  <th class="pb-3">Screen Name</th>
+                  <th class="pb-3">Session</th>
+                  <th class="pb-3">Elements</th>
+                  <th class="pb-3">Time</th>
+                </tr>
+              </thead>
+              <tbody id="screensList">
+                <tr><td colspan="4" class="text-gray-500 py-4">Select a session to view screens</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-    <!-- Issues Tab -->
-    <div id="issues-tab" class="tab-content hidden">
-      <div class="card p-4">
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-gray-400 text-sm">
-              <th class="pb-3">Type</th>
-              <th class="pb-3">Description</th>
-              <th class="pb-3">Severity</th>
-              <th class="pb-3">Status</th>
-            </tr>
-          </thead>
-          <tbody id="issuesList">
-            <tr><td colspan="4" class="text-gray-500 py-4">No issues reported yet</td></tr>
-          </tbody>
-        </table>
+        <!-- Screenshots Tab -->
+        <div id="screenshots-tab" class="tab-content hidden">
+          <div class="card p-4">
+            <div class="flex gap-4 mb-4">
+              <div class="flex-1">
+                <h4 class="text-sm font-semibold mb-2">Screenshot List</h4>
+                <div id="screenshotsList" class="space-y-2 max-h-64 overflow-y-auto">
+                  <div class="text-gray-500 py-2">No screenshots</div>
+                </div>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-sm font-semibold mb-2">Screenshot Viewer</h4>
+                <div id="screenshotViewer" class="bg-gray-900 rounded p-2 min-h-64 flex items-center justify-center">
+                  <span class="text-gray-500">Click a screenshot to view</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Marker Form -->
+            <div id="markerForm" class="hidden mt-4 pt-4 border-t border-gray-700">
+              <h4 class="text-sm font-semibold mb-2">Add Issue Marker</h4>
+              <div class="flex gap-2">
+                <input type="text" id="markerDescription" placeholder="Issue description..." class="bg-gray-800 px-3 py-2 rounded text-sm flex-1">
+                <select id="markerType" class="bg-gray-800 px-3 py-2 rounded text-sm">
+                  <option value="issue">Issue</option>
+                  <option value="bug">Bug</option>
+                  <option value="improvement">Improvement</option>
+                  <option value="note">Note</option>
+                </select>
+                <button onclick="addMarker()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">Add Marker</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Elements Tab -->
+        <div id="elements-tab" class="tab-content hidden">
+          <div class="card p-4">
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-gray-400 text-sm">
+                  <th class="pb-3">Element ID</th>
+                  <th class="pb-3">Type</th>
+                  <th class="pb-3">Label</th>
+                  <th class="pb-3">Screen</th>
+                  <th class="pb-3">Time</th>
+                </tr>
+              </thead>
+              <tbody id="elementsList">
+                <tr><td colspan="5" class="text-gray-500 py-4">Select a session to view elements</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Issues Tab -->
+        <div id="issues-tab" class="tab-content hidden">
+          <div class="card p-4">
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-gray-400 text-sm">
+                  <th class="pb-3">Type</th>
+                  <th class="pb-3">Description</th>
+                  <th class="pb-3">Severity</th>
+                  <th class="pb-3">Screen</th>
+                  <th class="pb-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="issuesList">
+                <tr><td colspan="5" class="text-gray-500 py-4">Select a session to view issues</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -140,7 +225,6 @@
       <div class="flex items-center gap-4">
         <span class="text-gray-400">API URL:</span>
         <input type="text" id="apiUrl" value="http://localhost:3002" class="bg-gray-800 px-3 py-2 rounded text-sm w-64" onchange="updateApiUrl()">
-        <button onclick="loadData()" class="bg-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-600">Refresh</button>
         <span id="apiStatus" class="text-green-400 text-sm ml-4">Connected</span>
       </div>
     </div>
@@ -148,7 +232,10 @@
 
   <script>
     let apiUrl = 'http://localhost:3002';
-    
+    let currentSessionId = null;
+    let currentScreenshotId = null;
+    let currentScreenshotData = null;
+
     function showTab(tab) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(el => {
@@ -156,8 +243,9 @@
         el.classList.add('text-gray-400');
       });
       document.getElementById(tab + '-tab').classList.remove('hidden');
-      document.querySelector(`[data-tab="${tab}"]`).classList.add('text-indigo-400');
-      document.querySelector(`[data-tab="${tab}"]`).classList.remove('text-gray-400');
+      const btn = document.querySelector(`[data-tab="${tab}"]`);
+      btn.classList.add('text-indigo-400');
+      btn.classList.remove('text-gray-400');
     }
 
     function updateApiUrl() {
@@ -167,8 +255,19 @@
 
     async function loadData() {
       try {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const status = document.getElementById('statusFilter').value;
+        
+        let sessionsUrl = `${apiUrl}/api/sessions`;
+        const params = new URLSearchParams();
+        if (dateFrom) params.append('dateFrom', dateFrom);
+        if (dateTo) params.append('dateTo', dateTo);
+        if (status) params.append('status', status);
+        if (params.toString()) sessionsUrl += '?' + params.toString();
+        
         const [sessionsRes, screensRes, elementsRes, issuesRes] = await Promise.all([
-          fetch(`${apiUrl}/api/sessions`).catch(() => ({ json: () => [] })),
+          fetch(sessionsUrl).catch(() => ({ json: () => [] })),
           fetch(`${apiUrl}/api/screens`).catch(() => ({ json: () => [] })),
           fetch(`${apiUrl}/api/elements`).catch(() => ({ json: () => [] })),
           fetch(`${apiUrl}/api/issues`).catch(() => ({ json: () => [] }))
@@ -179,70 +278,48 @@
         const elements = await elementsRes.json();
         const issues = await issuesRes.json();
 
+        const activeSessions = sessions.filter(s => s.status === 'active');
+        
         document.getElementById('sessionCount').textContent = sessions.length;
+        document.getElementById('activeCount').textContent = activeSessions.length;
         document.getElementById('screenCount').textContent = screens.length;
         document.getElementById('elementCount').textContent = elements.length;
         document.getElementById('issueCount').textContent = issues.length;
+        
+        // Update filter status
+        const filterText = [dateFrom && `from ${dateFrom}`, dateTo && `to ${dateTo}`, status && `status: ${status}`].filter(Boolean).join(', ');
+        document.getElementById('filterStatus').textContent = filterText || 'Showing all sessions';
 
-        // Sessions
+        // Sessions with click handlers
         const sessionsList = document.getElementById('sessionsList');
         if (sessions.length === 0) {
-          sessionsList.innerHTML = '<tr><td colspan="5" class="text-gray-500 py-4">No sessions yet - integrate SDK into your app!</td></tr>';
+          sessionsList.innerHTML = '<div class="text-gray-500 py-4 text-center">No sessions yet - integrate SDK!</div>';
         } else {
           sessionsList.innerHTML = sessions.map(s => `
-            <tr class="border-t border-gray-700">
-              <td class="py-3 font-mono text-sm">${s.session_id?.substring(0, 12) || 'N/A'}</td>
-              <td class="py-3 text-gray-400 font-mono text-sm">${s.app_id?.substring(0, 8) || 'Unknown'}</td>
-              <td class="py-3"><span class="text-green-400">active</span></td>
-              <td class="py-3 text-gray-400">${new Date(s.created_at).toLocaleString()}</td>
-              <td class="py-3 text-gray-400">${screens.filter(sc => sc.session_id === s.session_id).length}</td>
-            </tr>
+            <div onclick="selectSession('${s.id}')" 
+                 class="p-3 rounded cursor-pointer ${currentSessionId === s.id ? 'bg-indigo-600' : 'bg-gray-800 hover:bg-gray-700'} transition">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-mono text-xs">${s.id.substring(0, 12)}</span>
+                <span class="text-xs px-2 py-0.5 rounded ${s.status === 'active' ? 'bg-green-900 text-green-400' : 'bg-gray-600'}">${s.status}</span>
+              </div>
+              <div class="text-sm text-gray-400">
+                ⏱️ ${s.duration || '0s'} • 📱 ${s.screen_count || 0} screens
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                ${new Date(s.started_at).toLocaleString()}
+              </div>
+            </div>
           `).join('');
         }
 
-        // Screens
-        const screensList = document.getElementById('screensList');
-        if (screens.length === 0) {
-          screensList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No screens captured - use SDK trackScreen()</td></tr>';
-        } else {
-          screensList.innerHTML = screens.map(s => `
-            <tr class="border-t border-gray-700">
-              <td class="py-3 font-semibold">${s.screen_name}</td>
-              <td class="py-3 text-gray-400 font-mono text-xs">${s.session_id?.substring(0, 8) || 'N/A'}</td>
-              <td class="py-3 text-gray-400">${elements.filter(e => e.screen_name === s.screen_name).length}</td>
-              <td class="py-3 text-gray-400">${new Date(s.created_at).toLocaleTimeString()}</td>
-            </tr>
-          `).join('');
+        // Auto-select first session if none selected
+        if (!currentSessionId && sessions.length > 0) {
+          selectSession(sessions[0].id);
         }
 
-        // Elements
-        const elementsList = document.getElementById('elementsList');
-        if (elements.length === 0) {
-          elementsList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No elements tracked - use SDK trackElement()</td></tr>';
-        } else {
-          elementsList.innerHTML = elements.map(e => `
-            <tr class="border-t border-gray-700">
-              <td class="py-3 font-mono text-sm">${e.element_id}</td>
-              <td class="py-3"><span class="bg-gray-700 px-2 py-1 rounded text-xs">${e.element_type}</span></td>
-              <td class="py-3">${e.element_label || '-'}</td>
-              <td class="py-3 text-gray-400">${e.screen_name || '-'}</td>
-            </tr>
-          `).join('');
-        }
-
-        // Issues
-        const issuesList = document.getElementById('issuesList');
-        if (issues.length === 0) {
-          issuesList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No issues detected yet</td></tr>';
-        } else {
-          issuesList.innerHTML = issues.map(i => `
-            <tr class="border-t border-gray-700">
-              <td class="py-3">${i.type || 'bug'}</td>
-              <td class="py-3">${i.description || '-'}</td>
-              <td class="py-3"><span class="px-2 py-1 rounded text-xs ${i.severity === 'critical' ? 'bg-red-900 text-red-400' : i.severity === 'medium' ? 'bg-yellow-900 text-yellow-400' : 'bg-gray-700'}">${i.severity || 'low'}</span></td>
-              <td class="py-3 text-gray-400">${i.status || 'open'}</td>
-            </tr>
-          `).join('');
+        // Update current session data if one is selected
+        if (currentSessionId) {
+          updateSessionDetails(currentSessionId, screens, elements, issues);
         }
 
       } catch (err) {
@@ -252,8 +329,241 @@
       }
     }
 
+    async function selectSession(sessionId) {
+      currentSessionId = sessionId;
+      loadData(); // Refresh to highlight selected session
+    }
+
+    async function updateSessionDetails(sessionId, allScreens, allElements, allIssues) {
+      const sessionScreens = allScreens.filter(s => s.session_id === sessionId);
+      const sessionElements = allElements.filter(e => e.session_id === sessionId);
+      const sessionIssues = allIssues.filter(i => i.session_id === sessionId);
+
+      // Screens
+      const screensList = document.getElementById('screensList');
+      if (sessionScreens.length === 0) {
+        screensList.innerHTML = '<tr><td colspan="4" class="text-gray-500 py-4">No screens captured</td></tr>';
+      } else {
+        screensList.innerHTML = sessionScreens.map(s => `
+          <tr class="border-t border-gray-700 hover:bg-gray-800/50">
+            <td class="py-3 font-semibold">${s.screen_name}</td>
+            <td class="py-3 text-gray-400 font-mono text-xs">${s.session_id?.substring(0, 8) || 'N/A'}</td>
+            <td class="py-3 text-gray-400">${sessionElements.filter(e => e.screen_name === s.screen_name).length}</td>
+            <td class="py-3 text-gray-400">${new Date(s.created_at).toLocaleTimeString()}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Elements
+      const elementsList = document.getElementById('elementsList');
+      if (sessionElements.length === 0) {
+        elementsList.innerHTML = '<tr><td colspan="5" class="text-gray-500 py-4">No elements tracked</td></tr>';
+      } else {
+        elementsList.innerHTML = sessionElements.map(e => `
+          <tr class="border-t border-gray-700 hover:bg-gray-800/50">
+            <td class="py-3 font-mono text-sm">${e.element_id}</td>
+            <td class="py-3"><span class="bg-gray-700 px-2 py-1 rounded text-xs">${e.element_type}</span></td>
+            <td class="py-3">${e.element_label || '-'}</td>
+            <td class="py-3 text-gray-400">${e.screen_name || '-'}</td>
+            <td class="py-3 text-gray-400 text-xs">${new Date(e.created_at).toLocaleTimeString()}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Issues
+      const issuesList = document.getElementById('issuesList');
+      if (sessionIssues.length === 0) {
+        issuesList.innerHTML = '<tr><td colspan="5" class="text-gray-500 py-4">No issues reported</td></tr>';
+      } else {
+        issuesList.innerHTML = sessionIssues.map(i => `
+          <tr class="border-t border-gray-700 hover:bg-gray-800/50">
+            <td class="py-3">${i.type || 'bug'}</td>
+            <td class="py-3">${i.description || '-'}</td>
+            <td class="py-3"><span class="px-2 py-1 rounded text-xs ${i.severity === 'critical' ? 'bg-red-900 text-red-400' : i.severity === 'medium' ? 'bg-yellow-900 text-yellow-400' : 'bg-gray-700'}">${i.severity || 'low'}</span></td>
+            <td class="py-3 text-gray-400 text-sm">${i.screenshot_id ? '📷 Yes' : '-'}</td>
+            <td class="py-3 text-gray-400">${i.status || 'open'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Load screenshots
+      loadScreenshots(sessionId);
+    }
+
+    async function loadScreenshots(sessionId) {
+      try {
+        const res = await fetch(`${apiUrl}/api/session/${sessionId}/screenshots`);
+        const screenshots = await res.json();
+        
+        const screenshotsList = document.getElementById('screenshotsList');
+        if (screenshots.length === 0) {
+          screenshotsList.innerHTML = '<div class="text-gray-500 py-2">No screenshots captured</div>';
+        } else {
+          screenshotsList.innerHTML = screenshots.map(s => `
+            <div onclick="viewScreenshot('${s.id}')" 
+                 class="p-2 rounded cursor-pointer ${currentScreenshotId === s.id ? 'bg-indigo-600' : 'bg-gray-800 hover:bg-gray-700'} transition flex items-center gap-2">
+              <span class="text-lg">📷</span>
+              <div class="flex-1">
+                <div class="text-sm">${s.screen_name || 'Unknown'}</div>
+                <div class="text-xs text-gray-500">${new Date(s.timestamp).toLocaleTimeString()}</div>
+                ${s.markers && s.markers.length > 0 ? `<div class="text-xs text-red-400 mt-1">⚠️ ${s.markers.length} markers</div>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error loading screenshots:', err);
+      }
+    }
+
+    async function viewScreenshot(screenshotId) {
+      currentScreenshotId = screenshotId;
+      
+      try {
+        const res = await fetch(`${apiUrl}/api/screenshot/${screenshotId}`);
+        const screenshot = await res.json();
+        
+        currentScreenshotData = screenshot;
+        
+        const viewer = document.getElementById('screenshotViewer');
+        
+        if (screenshot.data) {
+          // Build markers HTML
+          let markersHtml = '';
+          if (screenshot.markers && screenshot.markers.length > 0) {
+            markersHtml = screenshot.markers.map(m => `
+              <div class="marker ${m.type === 'issue' ? 'issue' : 'info'}" 
+                   style="left: ${m.x}%; top: ${m.y}%"
+                   title="${m.description}" 
+                   onclick="showMarkerDetails('${m.id}')">
+              </div>
+            `).join('');
+          }
+          
+          viewer.innerHTML = `
+            <div class="screenshot-container" onclick="handleScreenshotClick(event)">
+              <img src="data:image/jpeg;base64,${screenshot.data}" 
+                   style="max-width: 100%; max-height: 400px; display: block;"
+                   id="screenshotImage">
+              ${markersHtml}
+            </div>
+            <div class="text-xs text-gray-500 mt-2">
+              ${screenshot.screen_name || 'Unknown screen'} • Click to add marker
+            </div>
+          `;
+        } else {
+          viewer.innerHTML = '<span class="text-gray-500">Screenshot data not available</span>';
+        }
+        
+        // Show marker form
+        document.getElementById('markerForm').classList.remove('hidden');
+        
+        // Refresh sessions list to show marker counts
+        loadData();
+        
+      } catch (err) {
+        console.error('Error viewing screenshot:', err);
+      }
+    }
+
+    // Global click position storage
+    let pendingMarkerPos = null;
+
+    function handleScreenshotClick(event) {
+      const img = document.getElementById('screenshotImage');
+      if (!img) return;
+      
+      const rect = img.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      
+      pendingMarkerPos = { x, y };
+      
+      // Show marker preview
+      const container = document.querySelector('.screenshot-container');
+      let preview = document.getElementById('markerPreview');
+      if (!preview) {
+        preview = document.createElement('div');
+        preview.id = 'markerPreview';
+        preview.className = 'marker issue';
+        preview.style.position = 'absolute';
+        preview.style.pointerEvents = 'none';
+        container.appendChild(preview);
+      }
+      preview.style.left = x + '%';
+      preview.style.top = y + '%';
+      preview.style.display = 'block';
+      
+      // Focus description input
+      document.getElementById('markerDescription').focus();
+    }
+
+    async function addMarker() {
+      if (!currentScreenshotId || !pendingMarkerPos) {
+        alert('Click on the screenshot to set marker position');
+        return;
+      }
+      
+      const description = document.getElementById('markerDescription').value.trim();
+      const type = document.getElementById('markerType').value;
+      
+      if (!description) {
+        alert('Please enter a description');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${apiUrl}/api/screenshot/${currentScreenshotId}/marker`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            x: pendingMarkerPos.x,
+            y: pendingMarkerPos.y,
+            description,
+            type,
+          }),
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          // Clear form
+          document.getElementById('markerDescription').value = '';
+          
+          // Re-view screenshot to show new marker
+          viewScreenshot(currentScreenshotId);
+          
+          // Show success feedback
+          const preview = document.getElementById('markerPreview');
+          if (preview) preview.style.display = 'none';
+          pendingMarkerPos = null;
+        }
+      } catch (err) {
+        console.error('Error adding marker:', err);
+        alert('Failed to add marker');
+      }
+    }
+
+    function showMarkerDetails(markerId) {
+      const marker = currentScreenshotData?.markers?.find(m => m.id === markerId);
+      if (marker) {
+        alert(`${marker.type.toUpperCase()}: ${marker.description}\nPosition: (${marker.x.toFixed(1)}%, ${marker.y.toFixed(1)}%)`);
+      }
+    }
+
+    async function exportSession(format) {
+      if (!currentSessionId) {
+        alert('Select a session first');
+        return;
+      }
+      
+      const endpoint = format === 'json' ? 'json' : 'markdown';
+      window.open(`${apiUrl}/api/session/${currentSessionId}/export/${endpoint}`, '_blank');
+    }
+
+    // Initialize
     loadData();
-    setInterval(loadData, 3000);
+    setInterval(loadData, 5000);
   </script>
 </body>
 </html>
