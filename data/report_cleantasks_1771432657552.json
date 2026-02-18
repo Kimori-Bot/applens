@@ -1,0 +1,117 @@
+{
+  "summary": {
+    "appId": "cleantasks",
+    "sessionId": "cleantasks_1771432657552",
+    "generatedAt": "2026-02-18T16:37:42.146Z",
+    "duration": "3 iterations",
+    "totalIssues": 3
+  },
+  "exploration": {
+    "screensVisited": [
+      "Home"
+    ],
+    "elementsEncountered": [
+      "add-button",
+      "sort-room",
+      "sort-frequency",
+      "sort-name",
+      "sort-completed",
+      "sort-due",
+      "tab-daily",
+      "tab-weekly",
+      "tab-monthly",
+      "tab-list",
+      "delete-4",
+      "delete-6",
+      "delete-5",
+      "delete-1",
+      "delete-7",
+      "delete-1771428771386",
+      "delete-3",
+      "delete-2",
+      "room-kitchen",
+      "add-task",
+      "delete-1771431763319",
+      "room-outdoor",
+      "room-other",
+      "room-laundry",
+      "room-garage",
+      "freq-biweekly",
+      "freq-daily",
+      "freq-once",
+      "freq-quarterly",
+      "freq-monthly",
+      "freq-weekly"
+    ],
+    "totalActions": 3
+  },
+  "issues": {
+    "error": [
+      {
+        "type": "error",
+        "severity": "high",
+        "message": "Failed to load task list",
+        "iteration": 1,
+        "timestamp": "2026-02-18T16:37:37.617Z"
+      }
+    ],
+    "ui_bug": [
+      {
+        "type": "ui_bug",
+        "severity": "medium",
+        "message": "Button overlap on small screens",
+        "iteration": 2,
+        "timestamp": "2026-02-18T16:37:37.617Z"
+      }
+    ],
+    "performance": [
+      {
+        "type": "performance",
+        "severity": "low",
+        "message": "Slow rendering on task list",
+        "iteration": 3,
+        "timestamp": "2026-02-18T16:37:37.617Z"
+      }
+    ]
+  },
+  "severityBreakdown": {
+    "high": 1,
+    "medium": 1,
+    "low": 1
+  },
+  "testActions": [
+    {
+      "iteration": 1,
+      "action": "tap",
+      "params": {
+        "elementId": "sort-due"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:37:37.621Z"
+    },
+    {
+      "iteration": 2,
+      "action": "tap",
+      "params": {
+        "elementId": "freq-weekly"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:37:39.133Z"
+    },
+    {
+      "iteration": 3,
+      "action": "tap",
+      "params": {
+        "elementId": "delete-6"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:37:40.643Z"
+    }
+  ],
+  "recommendations": [
+    "Add comprehensive error handling with user feedback",
+    "Review UI component states (disabled/hidden)",
+    "Optimize rendering with React.memo and useMemo",
+    "Expand test coverage to cover more screens"
+  ]
+}

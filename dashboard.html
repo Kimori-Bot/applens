@@ -230,14 +230,15 @@
     <div class="mt-8 pt-6 border-t border-gray-800">
       <div class="flex items-center gap-4">
         <span class="text-gray-400">API URL:</span>
-        <input type="text" id="apiUrl" value="http://localhost:3002" class="bg-gray-800 px-3 py-2 rounded text-sm w-64" onchange="updateApiUrl()">
+        <input type="text" id="apiUrl" value="" class="bg-gray-800 px-3 py-2 rounded text-sm w-64" onchange="updateApiUrl()">
+        <script>document.getElementById('apiUrl').value = window.location.origin;</script>
         <span id="apiStatus" class="text-green-400 text-sm ml-4">Connected</span>
       </div>
     </div>
   </div>
 
   <script>
-    let apiUrl = 'http://localhost:3002';
+    let apiUrl = window.location.origin;
     let currentSessionId = null;
     let currentScreenshotId = null;
     let currentScreenshotData = null;
@@ -322,7 +323,7 @@ export default function App() {'{'}<br>
 &nbsp;&nbsp;return (<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;AppLensProvider config={'{'} {'{'}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appId: 'your-app-id',<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apiUrl: 'http://localhost:3002'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apiUrl: window.location.origin<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'}'} {'}'}&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;YourApp /&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/AppLensProvider&gt;<br>

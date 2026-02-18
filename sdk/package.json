@@ -1,7 +1,7 @@
 {
   "name": "@applens/react-native",
-  "version": "1.1.0",
-  "description": "AppLens SDK for React Native - AI-powered app review with screenshot capture",
+  "version": "1.2.0",
+  "description": "AppLens SDK for React Native - AI-powered app testing with screenshot capture, UI automation, and video recording",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
@@ -13,8 +13,11 @@
   "peerDependenciesMeta": {
     "react-native-view-shot": {
       "optional": true
+    },
+    "react-native-fs": {
+      "optional": true
     }
   },
-  "keywords": ["applens", "react-native", "sdk", "ai", "review", "testing", "screenshot"],
+  "keywords": ["applens", "react-native", "sdk", "ai", "review", "testing", "screenshot", "automation", "video"],
   "license": "MIT"
 }

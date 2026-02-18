@@ -1,40 +1,34 @@
 # AppLens SDK for React Native
 
-AI-powered app review SDK with automatic screenshot capture and user interaction tracking.
+AI-powered app testing SDK with screenshot capture, UI automation, and video recording support.
+
+## Features
+
+- **Screenshot Capture** - Automatically capture screenshots on screen navigation using `react-native-view-shot`
+- **UI Automation** - AI can trigger taps and inputs via component registry
+- **Video Recording** - Record test sessions (stretch goal)
+- **Command Polling** - AI agent can send commands (`tap`, `input`, `capture`, `complete`, `wait`)
 
 ## Installation
 
 ```bash
-npm install @applens/react-native
-# or
-yarn add @applens/react-native
-```
-
-**Peer Dependencies:**
-- `react-native` (>= 0.60.0)
-- `react-native-view-shot` (optional, for screenshot capture)
-
-```bash
-npm install react-native-view-shot
+npm install applens-sdk react-native-view-shot react-native-fs
 ```
 
 ## Quick Start
 
-### 1. Wrap your app with AppLensProvider
+### 1. Wrap Your App
 
-```jsx
-import { AppLensProvider } from '@applens/react-native';
+```tsx
+import { AppLensProvider } from 'applens-sdk';
 
 function App() {
   return (
-    <AppLensProvider
-      config={{
-        apiUrl: 'http://localhost:3002',
-        appId: 'your-app-id',
-        organizationId: 'your-org-id',
-        autoTrack: true,
-        autoCaptureScreenshots: true,
-      }}
+    <AppLensProvider 
+      apiUrl="http://your-server:3002" 
+      appId="your-app" 
+      testMode={true}
+      enableScreenshots={true}
     >
       <YourApp />
     </AppLensProvider>
@@ -42,180 +36,126 @@ function App() {
 }
 ```
 
-### 2. Track screens and elements
+### 2. Track Elements
 
-```jsx
-import { useAppLens } from '@applens/react-native';
+The SDK automatically tracks elements when they are tapped. Use `testID` for identification:
+
+```tsx
+import { withAppLens, AppLensButton, AppLensInput } from 'applens-sdk';
+
+// Using wrapped components (recommended)
+<AppLensButton testID="add-task-btn" onPress={handleAddTask}>
+  Add Task
+</AppLensButton>
+
+<AppLensInput 
+  testID="task-input" 
+  onChangeText={setTaskText} 
+  placeholder="Enter task..." 
+/>
+
+// Or wrap existing components
+const MyButton = withAppLens(TouchableOpacity, 'my-button');
+```
+
+### 3. Capture Screenshots
+
+Screenshots are automatically captured when using `AppLensScreen`:
+
+```tsx
+import { AppLensScreen } from 'applens-sdk';
 
 function HomeScreen() {
-  const { trackScreen, trackElement } = useAppLens();
+  return (
+    <AppLensScreen name="Home">
+      <YourScreenContent />
+    </AppLensScreen>
+  );
+}
+```
 
+Or manually:
+
+```tsx
+import { captureScreen } from 'applens-sdk';
+import { useAppLens } from 'applens-sdk';
+
+function MyScreen() {
+  const config = useAppLens();
+  
   useEffect(() => {
-    // Track screen view
-    trackScreen('HomeScreen');
+    captureScreen('MyScreen', config);
   }, []);
-
-  return (
-    <View>
-      <TouchableOpacity 
-        onPress={() => {
-          trackElement('login-btn', 'button', 'Login');
-          // your login logic
-        }}
-      >
-        <Text>Login</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  
+  return <View>...</View>;
 }
 ```
 
-### 3. Capture screenshots manually
+## AI Commands
 
-```jsx
-import { useAppLens } from '@applens/react-native';
+When `testMode={true}`, the SDK polls for commands from the AI agent:
 
-function SettingsScreen() {
-  const { takeScreenshot, mainViewRef } = useAppLens();
-
-  return (
-    <View ref={mainViewRef}>
-      <Button title="Capture" onPress={takeScreenshot} />
-    </View>
-  );
-}
-```
+| Command | Params | Description |
+|---------|--------|-------------|
+| `tap` | `{ elementId: string }` | Trigger element's onPress |
+| `input` | `{ elementId: string, value: string }` | Set input value |
+| `capture` | `{ screen?: string }` | Capture screenshot |
+| `wait` | `{ duration: number }` | Wait in ms |
+| `complete` | - | End testing session |
 
 ## API Reference
 
-### `<AppLensProvider>`
+### Provider
 
-Wraps your app to enable AppLens tracking.
-
-**Props:**
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `config` | `Object` | `{}` | Configuration object |
-| `children` | `ReactNode` | - | Your app components |
-
-**Config Options:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `apiUrl` | `string` | `'http://localhost:3002'` | AppLens API server URL |
-| `appId` | `string` | `null` | Your app ID |
-| `organizationId` | `string` | `null` | Your organization ID |
-| `sessionId` | `string` | `auto-generated` | Custom session ID |
-| `autoTrack` | `boolean` | `true` | Auto-start session on mount |
-| `autoCaptureScreenshots` | `boolean` | `true` | Auto-capture screenshots |
-| `screenshotInterval` | `number` | `5000` | Screenshot interval in ms |
-| `debug` | `boolean` | `false` | Enable debug logging |
-
----
-
-### `useAppLens()`
-
-Hook to access AppLens functionality.
-
-**Returns:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `isSessionActive` | `boolean` | Whether session is active |
-| `screens` | `Array` | Tracked screens |
-| `elements` | `Array` | Tracked UI elements |
-| `screenshots` | `Array` | Captured screenshots |
-| `currentScreen` | `string` | Current screen name |
-| `sessionStartTime` | `number` | Session start timestamp |
-| `trackScreen` | `Function` | Track a screen view |
-| `trackElement` | `Function` | Track a UI element |
-| `takeScreenshot` | `Function` | Capture a screenshot |
-| `startSession` | `Function` | Start a new session |
-| `stopSession` | `Function` | Stop the current session |
-| `clearData` | `Function` | Clear all tracked data |
-| `mainViewRef` | `ReactRef` | Ref for screenshot capture |
-
----
-
-### `trackScreen(name)`
-
-Track a screen/view.
-
-**Parameters:**
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | `string` | Yes | Screen name |
-
-**Returns:** `Object` - Screen data with id, name, timestamp
-
-**Example:**
-```js
-trackScreen('ProductListScreen');
+```tsx
+<AppLensProvider
+  apiUrl="http://localhost:3002"   // AppLens server URL
+  appId="my-app"                   // Your app identifier
+  testMode={false}                 // Enable AI command execution
+  enableScreenshots={true}        // Enable screenshot capture
+>
 ```
 
----
+### Hooks
 
-### `trackElement(id, type, label)`
-
-Track a UI element interaction.
-
-**Parameters:**
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | `string` | Yes | Element ID |
-| `type` | `string` | Yes | Element type (`button`, `input`, `text`, etc.) |
-| `label` | `string` | No | Element label/description |
-
-**Returns:** `Object` - Element data with id, type, label, timestamp
-
-**Example:**
-```js
-trackElement('submit-form', 'button', 'Submit Order');
-trackElement('email-input', 'input', 'Email Address');
+```tsx
+const config = useAppLens();       // Get SDK config
 ```
 
----
+### Components
 
-## Additional Components
+- `AppLensProvider` - Root provider component
+- `AppLensScreen` - Screen wrapper with auto-screenshot
+- `AppLensButton` - Button with automation support
+- `AppLensInput` - TextInput with automation support
+- `withAppLens(Component, testID)` - HOC for custom components
 
-### `<ScreenCapture>`
+### Functions
 
-Wrapper component for automatic screenshot capture.
+- `trackScreen(name, config)` - Track screen visit
+- `trackElement(id, type, label, config)` - Track element interaction
+- `captureScreen(name, config)` - Capture screenshot
+- `registerElement(id, handler)` - Register element for AI
+- `unregisterElement(id)` - Unregister element
+- `getElementHandler(id)` - Get element handler
 
-```jsx
-import { ScreenCapture, useAppLens } from '@applens/react-native';
+## Integration with CleanTasks
 
-function MyScreen() {
-  return (
-    <ScreenCapture options={{ format: 'jpg', quality: 0.8 }}>
-      <View>
-        <Text>Content to capture</Text>
-      </View>
-    </ScreenCapture>
-  );
-}
-```
+See `/root/.openclaw/workspace/CleanTasks/App.tsx` for a complete example of how CleanTasks uses the AppLens SDK:
 
-### `<CaptureView>`
+1. Basic tracking functions (`trackScreen`, `trackElement`)
+2. Command execution (`executeCommand`) 
+3. Polling for AI commands
 
-A View that can be captured for screenshots.
+## Server Requirements
 
-### `<TrackableView>`, `<TrackableText>`, `<TrackableTouchable>`
+The AppLens server exposes these endpoints:
 
-Components that auto-track taps.
-
-```jsx
-import { TrackableTouchable } from '@applens/react-native';
-
-<TrackableTouchable id="buy-btn" label="Buy Now" type="button">
-  <Text>Buy Now</Text>
-</TrackableTouchable>
-```
-
----
+- `POST /api/screen` - Track screen visit
+- `POST /api/element` - Track element interaction
+- `POST /api/screenshot` - Store screenshot
+- `GET /api/test/commands?sessionId=...` - Get pending AI commands
+- `POST /api/test/commandResult` - Report command result
 
 ## License
 

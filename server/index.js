@@ -8,7 +8,18 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
+// Storage: supports memory, file, or supabase
+const { getStorage, initStorage, STORAGE_TYPE } = require('./storage-manager');
+
+// Initialize async storage backends
+initStorage();
+
+// Get storage instance
+const storage = getStorage();
+
 const app = express();
+
+console.log(`[AppLens] Starting with ${STORAGE_TYPE} storage`);
 
 // CORS - allow all origins for dashboard
 app.use(cors({
@@ -33,6 +44,7 @@ const memoryStore = {
   issues: [],
   screenshots: [],
   activities: [],
+  recordings: [],
 };
 
 // Helper: Get session duration
@@ -216,7 +228,7 @@ app.post('/api/screen', async (req, res) => {
       created_at: new Date(),
     };
     
-    memoryStore.screens.push(screenRecord);
+    storage.push('screens', screenRecord);
     res.json({ success: true, id: screen.id });
   } catch (error) {
     console.error('Error storing screen:', error);
@@ -225,8 +237,9 @@ app.post('/api/screen', async (req, res) => {
 });
 
 // Get all screens
-app.get('/api/screens', (req, res) => {
-  res.json(memoryStore.screens);
+app.get('/api/screens', async (req, res) => {
+  const data = await storage.read('screens');
+  res.json(data);
 });
 
 // Store element event
@@ -245,7 +258,7 @@ app.post('/api/element', async (req, res) => {
       created_at: new Date(),
     };
     
-    memoryStore.elements.push(elementRecord);
+    storage.push('elements', elementRecord);
     res.json({ success: true, id: element.id });
   } catch (error) {
     console.error('Error storing element:', error);
@@ -254,8 +267,8 @@ app.post('/api/element', async (req, res) => {
 });
 
 // Get all elements
-app.get('/api/elements', (req, res) => {
-  res.json(memoryStore.elements);
+app.get('/api/elements', async (req, res) => {
+  const data = await storage.read('elements'); res.json(data);
 });
 
 // ============ SESSION ENDPOINTS ============
@@ -888,6 +901,109 @@ app.post('/api/test/commandResult', (req, res) => {
   const { sessionId, appId, result } = req.body;
   console.log('[Test Mode] Command result:', result);
   res.json({ success: true });
+});
+
+// ============ VIDEO RECORDING ENDPOINTS ============
+
+// Start video recording session
+app.post('/api/recording/start', (req, res) => {
+  try {
+    const { sessionId, appId } = req.body;
+    
+    const recording = {
+      session_id: sessionId,
+      app_id: appId,
+      recording_id: `recording_${Date.now()}`,
+      status: 'recording',
+      started_at: new Date(),
+      duration: 0,
+      segments: [],
+    };
+    
+    memoryStore.recordings = memoryStore.recordings || [];
+    memoryStore.recordings.push(recording);
+    
+    console.log('[Recording] Started:', recording.recording_id);
+    res.json({ success: true, recordingId: recording.recording_id });
+  } catch (error) {
+    console.error('Error starting recording:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stop video recording
+app.post('/api/recording/stop', (req, res) => {
+  try {
+    const { sessionId, recordingId } = req.body;
+    
+    const recording = memoryStore.recordings?.find(r => r.recording_id === recordingId);
+    if (!recording) {
+      return res.status(404).json({ error: 'Recording not found' });
+    }
+    
+    recording.status = 'stopped';
+    recording.ended_at = new Date();
+    recording.duration = (new Date(recording.ended_at) - new Date(recording.started_at)) / 1000;
+    
+    console.log('[Recording] Stopped:', recordingId, 'Duration:', recording.duration, 's');
+    res.json({ success: true, recording });
+  } catch (error) {
+    console.error('Error stopping recording:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add video segment (frame)
+app.post('/api/recording/segment', (req, res) => {
+  try {
+    const { recordingId, segment } = req.body;
+    
+    const recording = memoryStore.recordings?.find(r => r.recording_id === recordingId);
+    if (!recording) {
+      return res.status(404).json({ error: 'Recording not found' });
+    }
+    
+    recording.segments = recording.segments || [];
+    recording.segments.push({
+      timestamp: new Date(),
+      data: segment.data, // base64 frame
+      type: segment.type || 'image',
+    });
+    
+    res.json({ success: true, segmentCount: recording.segments.length });
+  } catch (error) {
+    console.error('Error adding segment:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get recording
+app.get('/api/recording/:id', (req, res) => {
+  const { id } = req.params;
+  
+  const recording = memoryStore.recordings?.find(r => r.recording_id === id);
+  if (!recording) {
+    return res.status(404).json({ error: 'Recording not found' });
+  }
+  
+  res.json(recording);
+});
+
+// Get recordings for session
+app.get('/api/session/:sessionId/recordings', (req, res) => {
+  const { sessionId } = req.params;
+  
+  const recordings = (memoryStore.recordings || [])
+    .filter(r => r.session_id === sessionId)
+    .map(r => ({
+      recording_id: r.recording_id,
+      status: r.status,
+      started_at: r.started_at,
+      duration: r.duration,
+      segment_count: r.segments?.length || 0,
+    }));
+  
+  res.json(recordings);
 });
 
 // ============ DEBUG ENDPOINT ============

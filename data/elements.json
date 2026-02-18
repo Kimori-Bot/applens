@@ -1,0 +1,704 @@
+[
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:37.740Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:39.949Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-room",
+    "element_type": "button",
+    "element_label": "room",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:43.370Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-frequency",
+    "element_type": "button",
+    "element_label": "frequency",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:45.751Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-name",
+    "element_type": "button",
+    "element_label": "name",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:46.638Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-completed",
+    "element_type": "button",
+    "element_label": "completed",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:47.356Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-name",
+    "element_type": "button",
+    "element_label": "name",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:49.907Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-completed",
+    "element_type": "button",
+    "element_label": "completed",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:51.240Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-room",
+    "element_type": "button",
+    "element_label": "room",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:53.864Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-due",
+    "element_type": "button",
+    "element_label": "due",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:21:55.339Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-daily",
+    "element_type": "tab",
+    "element_label": "daily",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:20.759Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-weekly",
+    "element_type": "tab",
+    "element_label": "weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:21.296Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-monthly",
+    "element_type": "tab",
+    "element_label": "monthly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:21.829Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-weekly",
+    "element_type": "tab",
+    "element_label": "weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:22.395Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-room",
+    "element_type": "button",
+    "element_label": "room",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:22.956Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-frequency",
+    "element_type": "button",
+    "element_label": "frequency",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:23.410Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-name",
+    "element_type": "button",
+    "element_label": "name",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:23.842Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-monthly",
+    "element_type": "tab",
+    "element_label": "monthly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:24.160Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-weekly",
+    "element_type": "tab",
+    "element_label": "weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:24.528Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:24.930Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "tab-list",
+    "element_type": "tab",
+    "element_label": "list",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:26.646Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-4",
+    "element_type": "button",
+    "element_label": "4",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:35.368Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-6",
+    "element_type": "button",
+    "element_label": "6",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:35.772Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-5",
+    "element_type": "button",
+    "element_label": "5",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:35.950Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-1",
+    "element_type": "button",
+    "element_label": "1",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:36.112Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-7",
+    "element_type": "button",
+    "element_label": "7",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:36.364Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-1771428771386",
+    "element_type": "button",
+    "element_label": "1771428771386",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:36.540Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-3",
+    "element_type": "button",
+    "element_label": "3",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:36.699Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-2",
+    "element_type": "button",
+    "element_label": "2",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:36.865Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "sort-due",
+    "element_type": "button",
+    "element_label": "due",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:37.801Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:38.415Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-kitchen",
+    "element_type": "button",
+    "element_label": "Kitchen",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:39.483Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-task",
+    "element_type": "button",
+    "element_label": "hey",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:43.327Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "delete-1771431763319",
+    "element_type": "button",
+    "element_label": "1771431763319",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:47.214Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:55.014Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-kitchen",
+    "element_type": "button",
+    "element_label": "Kitchen",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:56.271Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-outdoor",
+    "element_type": "button",
+    "element_label": "Outdoor",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:58.486Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-other",
+    "element_type": "button",
+    "element_label": "Other",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:58.802Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-laundry",
+    "element_type": "button",
+    "element_label": "Laundry",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:58.989Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-garage",
+    "element_type": "button",
+    "element_label": "Garage",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:59.240Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-outdoor",
+    "element_type": "button",
+    "element_label": "Outdoor",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:59.371Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-garage",
+    "element_type": "button",
+    "element_label": "Garage",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:59.523Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-other",
+    "element_type": "button",
+    "element_label": "Other",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:22:59.658Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "room-laundry",
+    "element_type": "button",
+    "element_label": "Laundry",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:00.160Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:01.235Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-daily",
+    "element_type": "button",
+    "element_label": "Daily",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:01.469Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:01.731Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-quarterly",
+    "element_type": "button",
+    "element_label": "Quarterly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:02.122Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-monthly",
+    "element_type": "button",
+    "element_label": "Monthly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:02.636Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:03.187Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-quarterly",
+    "element_type": "button",
+    "element_label": "Quarterly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:03.352Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-daily",
+    "element_type": "button",
+    "element_label": "Daily",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:03.690Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:03.967Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "add-button",
+    "element_type": "button",
+    "element_label": "Add Task",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:11.237Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-monthly",
+    "element_type": "button",
+    "element_label": "Monthly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:19.161Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-daily",
+    "element_type": "button",
+    "element_label": "Daily",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:20.710Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:20.808Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:22.344Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-quarterly",
+    "element_type": "button",
+    "element_label": "Quarterly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:22.508Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:23.027Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:23.245Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:23.744Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:23.893Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:24.130Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:24.432Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:24.545Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:24.707Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:25.260Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:25.745Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:26.327Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:26.860Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:27.295Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-quarterly",
+    "element_type": "button",
+    "element_label": "Quarterly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:27.462Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:27.715Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-weekly",
+    "element_type": "button",
+    "element_label": "Weekly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:27.891Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-biweekly",
+    "element_type": "button",
+    "element_label": "Every 2 Weeks",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:28.105Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-quarterly",
+    "element_type": "button",
+    "element_label": "Quarterly",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:28.297Z"
+  },
+  {
+    "session_id": "cleantasks_1771431691926",
+    "app_id": "cleantasks",
+    "element_id": "freq-once",
+    "element_type": "button",
+    "element_label": "One Time",
+    "timestamp": null,
+    "created_at": "2026-02-18T16:23:28.446Z"
+  }
+]

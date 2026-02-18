@@ -1,0 +1,66 @@
+{
+  "summary": {
+    "appId": "cleantasks",
+    "sessionId": "cleantasks_1771432252003",
+    "generatedAt": "2026-02-18T16:30:59.608Z",
+    "duration": "5 iterations",
+    "totalIssues": 0
+  },
+  "exploration": {
+    "screensVisited": [],
+    "elementsEncountered": [],
+    "totalActions": 5
+  },
+  "issues": {},
+  "severityBreakdown": {},
+  "testActions": [
+    {
+      "iteration": 1,
+      "action": "navigate",
+      "params": {
+        "screenName": "Search"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:30:52.072Z"
+    },
+    {
+      "iteration": 2,
+      "action": "tap",
+      "params": {
+        "elementId": "unknown"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:30:53.584Z"
+    },
+    {
+      "iteration": 3,
+      "action": "tap",
+      "params": {
+        "elementId": "unknown"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:30:55.093Z"
+    },
+    {
+      "iteration": 4,
+      "action": "tap",
+      "params": {
+        "elementId": "unknown"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:30:56.602Z"
+    },
+    {
+      "iteration": 5,
+      "action": "tap",
+      "params": {
+        "elementId": "unknown"
+      },
+      "screen": "unknown",
+      "timestamp": "2026-02-18T16:30:58.108Z"
+    }
+  ],
+  "recommendations": [
+    "Expand test coverage to cover more screens"
+  ]
+}
