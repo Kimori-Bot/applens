@@ -187,7 +187,7 @@ export async function POST(request) {
         await fetch(`http://localhost:3005/sessions/${sessionId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'type', text: decision.text })
+          body: JSON.stringify({ action: 'input', x: decision.x, y: decision.y, text: decision.text })
         });
         
         generatedTests.push({
@@ -201,6 +201,24 @@ export async function POST(request) {
         });
         
         history.push(`input:${decision.element}`);
+      }
+      else if (decision.action === 'PRESS_ENTER') {
+        await fetch(`http://localhost:3005/sessions/${sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'press_enter' })
+        });
+        
+        generatedTests.push({
+          id: `test_case_enter_${i + 1}`,
+          name: `Press Enter to submit ${decision.element}`,
+          action: 'PRESS_ENTER',
+          target: decision.element,
+          expected: 'Form submits or search executes',
+          priority: 'medium'
+        });
+        
+        history.push('press_enter');
       }
       else if (decision.action === 'BACK' || decision.action === 'NONE') {
         break;
@@ -231,7 +249,7 @@ export async function POST(request) {
     await fetch(`http://localhost:3005/sessions/${sessionId}`, { method: 'DELETE' });
 
     // AI analyzes and generates recommended tests (only if enabled)
-    let analysis = { summary: `Explored ${steps.length} screens`, recommendedTests: generatedTests };
+    let analysis = { summary: `Explored ${steps.length} screens`, recommendedTests: generatedTests, uxAnalysis: null, appUnderstanding: null };
     if (aiAnalysis) {
       try {
         const testAnalysis = await fetch('http://localhost:3006/analyze', {
@@ -240,7 +258,8 @@ export async function POST(request) {
           body: JSON.stringify({ 
             steps, 
             appName: appName || 'Test App',
-            testCount: generatedTests.length 
+            testCount: generatedTests.length,
+            screenshots: screenshots.slice(0, 3) // Send first 3 screenshots for analysis
           })
         });
         analysis = await testAnalysis.json();
@@ -273,7 +292,9 @@ export async function POST(request) {
       issuesFound: 0,
       timestamp: new Date().toISOString(),
       stepReasoning,
-      currentAction: `Completed ${testType} test: ${steps.length} steps`
+      currentAction: `Completed ${testType} test: ${steps.length} steps`,
+      uxAnalysis: analysis.uxAnalysis || null,
+      appUnderstanding: analysis.appUnderstanding || null
     };
 
     // Generate AI reviews for screenshots (only if enabled)
