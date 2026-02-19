@@ -12,6 +12,8 @@ const issuesRoutes = require('./routes/issues');
 const insightsRoutes = require('./routes/insights');
 const automationRoutes = require('./routes/automation');
 const testRoutes = require('./routes/test');
+const webTestRoutes = require('./routes/web-test');
+const devicesRoutes = require('./routes/devices');
 const { pool, testConnection } = require('./db');
 
 const app = express();
@@ -64,6 +66,8 @@ app.use('/api/issues', issuesRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/automation', automationRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/tests', webTestRoutes);
+app.use('/api/devices', devicesRoutes);
 
 // 404 handler
 app.use((req, res) => {
