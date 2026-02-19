@@ -190,6 +190,16 @@ export async function POST(request) {
           body: JSON.stringify({ action: 'input', x: decision.x, y: decision.y, text: decision.text })
         });
         
+        // Track auth state in history for proper flow
+        if (testType === 'auth' && credentials) {
+          // Check if this is email or password based on what was entered
+          if (decision.element.toLowerCase().includes('email')) {
+            history.push('email_filled');
+          } else if (decision.element.toLowerCase().includes('password')) {
+            history.push('password_filled');
+          }
+        }
+        
         generatedTests.push({
           id: `test_case_input_${i + 1}`,
           name: `Enter "${decision.text}" into ${decision.element}`,
