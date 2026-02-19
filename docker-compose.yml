@@ -1,0 +1,138 @@
+version: '3.8'
+
+# AppLens Full Stack Docker Compose
+# 
+# Usage:
+#   docker-compose up -d
+#
+# Environment variables can be configured in .env file:
+#   - POSTGRES_URL: PostgreSQL connection string
+#   - SUPABASE_URL: Supabase project URL  
+#   - SUPABASE_KEY: Supabase anon key
+#   - DB_TYPE: postgres | supabase | sqlite
+#   - STORAGE_TYPE: filesystem | s3 | supabase
+
+services:
+  # Next.js Web Application
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/applens}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - DB_TYPE=${DB_TYPE:-postgres}
+      - STORAGE_TYPE=${STORAGE_TYPE:-filesystem}
+    volumes:
+      - ./web/public/media:/app/public/media
+    depends_on:
+      - postgres
+      - automation-api
+      - ai-engine
+    networks:
+      - applens
+
+  # Browser Automation API (Puppeteer)
+  automation-api:
+    image: ghcr.io/puppeteer/puppeteer:latest
+    command: >
+      sh -c "npm install && node server/index.js"
+    working_dir: /workspace
+    ports:
+      - "3005:3005"
+    environment:
+      - PUPPETEER_SKIP_DOWNLOAD=false
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+    volumes:
+      - ./server:/workspace
+    networks:
+      - applens
+
+  # AI Decision Engine
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    environment:
+      - OLLAMA_HOST=${OLLAMA_HOST:-host.docker.internal:11434}
+      - MODEL=${MODEL:-llama3.2:latest}
+    networks:
+      - applens
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=applens
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - applens
+
+  # Redis for caching/sessions (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - applens
+
+  # Cluster Runner (on-demand simulators)
+  cluster-runner:
+    build:
+      context: ./cluster-runner
+      dockerfile: Dockerfile
+    ports:
+      - "4723-4753:4723-4753"
+    environment:
+      - NODE_ENV=production
+      - APPLENS_WEB_URL=http://web:3000
+    volumes:
+      - ./cluster-runner/data:/app/data
+    networks:
+      - applens
+
+  # Mobile Appium Servers (optional - for Android/iOS)
+  appium-android:
+    image: appium/appium:latest
+    ports:
+      - "4723:4723"
+    environment:
+      - APPIUM_OPTS=--allow-cors
+    privileged: true
+    networks:
+      - applens
+
+  # Reverse proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+    networks:
+      - applens
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  applens:
+    driver: bridge
