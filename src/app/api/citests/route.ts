@@ -69,9 +69,8 @@ export async function POST(request) {
         .single();
 
       if (createError) {
-        return NextResponse.json({ error: createError.message }, { status:       app = new500 });
+        return NextResponse.json({ error: createError.message }, { status: 500 });
       }
-App;
     }
 
     // Create a CI test run record

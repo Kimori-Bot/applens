@@ -1,0 +1,14 @@
+{
+  "testUser": {
+    "email": "test@example.com",
+    "password": "TestPassword123!",
+    "name": "Test User",
+    "company": "Test Company"
+  },
+  "adminUser": {
+    "email": "admin@example.com",
+    "password": "AdminPassword123!",
+    "name": "Admin User",
+    "company": "Admin Company"
+  }
+}

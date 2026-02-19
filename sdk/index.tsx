@@ -15,6 +15,10 @@ export function useAppLens({
   appToken, 
   serverUrl = DEFAULT_SERVER_URL,
   enabled = true 
+}: { 
+  appToken?: string;
+  serverUrl?: string;
+  enabled?: boolean;
 } = {}) {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState(null);
@@ -56,14 +60,14 @@ export function useAppLens({
           setTimeout(connect, 3000);
         };
         
-        ws.onerror = (err) => {
+        ws.onerror = (err: Event) => {
           console.error('[AppLens] Error:', err);
-          setError(err.message);
+          setError('WebSocket connection error');
         };
         
         wsRef.current = ws;
-      } catch (err) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
       }
     };
     
@@ -86,21 +90,21 @@ export function useAppLens({
         console.log('[AppLens] TAP:', payload);
         // Expose via window for testing
         if (typeof window !== 'undefined') {
-          window.applensLastCommand = { type: 'TAP', ...payload };
+          (window as any).applensLastCommand = { type: 'TAP', ...payload };
         }
         break;
         
       case 'INPUT':
         console.log('[AppLens] INPUT:', payload);
         if (typeof window !== 'undefined') {
-          window.applensLastCommand = { type: 'INPUT', ...payload };
+          (window as any).applensLastCommand = { type: 'INPUT', ...payload };
         }
         break;
         
       case 'SWIPE':
         console.log('[AppLens] SWIPE:', payload);
         if (typeof window !== 'undefined') {
-          window.applensLastCommand = { type: 'SWIPE', ...payload };
+          (window as any).applensLastCommand = { type: 'SWIPE', ...payload };
         }
         break;
         

@@ -42,3 +42,15 @@ export async function authenticateToken(request) {
   
   return { company: payload, error: null };
 }
+
+// Get authenticated user from request
+export function getAuthUser(request) {
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '') || request.cookies.get('token')?.value;
+  
+  if (!token) {
+    return null;
+  }
+  
+  return verifyToken(token);
+}
