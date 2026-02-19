@@ -11,7 +11,9 @@ import {
   Plus,
   ChevronRight,
   Zap,
-  X
+  X,
+  Package,
+  Server
 } from 'lucide-react';
 
 // Types
@@ -45,6 +47,8 @@ export default function Sidebar({ apps, onAddApp, collapsed = false }: SidebarPr
   
   const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
+    { href: '/dashboard/devices', icon: Server, label: 'Devices' },
+    { href: '/dashboard/builds', icon: Package, label: 'Builds' },
     { href: '/analytics', icon: BarChart3, label: 'Analytics' },
     { href: '/settings', icon: Settings, label: 'Settings' },
   ];
