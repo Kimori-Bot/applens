@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Standalone cluster runner - users can run this locally
+  cluster-runner:
+    build:
+      context: ./cluster-runner
+      dockerfile: Dockerfile
+    ports:
+      - "4723-4753:4723-4753"
+    environment:
+      - NODE_ENV=production
+      - APPLENS_CLUSTER_MODE=standalone
+    volumes:
+      - ./cluster-runner/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - applens
+
+  # Or run multiple runners for scaling
+  cluster-runner-android:
+    build:
+      context: ./cluster-runner
+      dockerfile: Dockerfile
+    ports:
+      - "4723:4723"
+    environment:
+      - NODE_ENV=production
+      - RUNNER_TYPE=android
+    command: ["node", "src/index.js", "--type", "android"]
+    networks:
+      - applens
+
+networks:
+  applens:
+    driver: bridge
