@@ -34,7 +34,7 @@ test.describe('Web Testing', () => {
       await page.waitForTimeout(3000);
       
       // Page should still be accessible
-      await expect(page.locator('text=Dashboard')).toBeVisible();
+      await expect(page.locator('h1:has-text("Dashboard")').first()).toBeVisible();
     });
   });
 

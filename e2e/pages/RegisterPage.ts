@@ -18,7 +18,7 @@ export class RegisterPage extends BasePage {
     this.passwordInput = page.locator('#password');
     this.confirmPasswordInput = page.locator('#confirmPassword');
     this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator('[class*="alert"], [class*="error"]');
+    this.errorMessage = page.locator('[class*="bg-red-50"], [class*="text-red-700"]');
     this.signInLink = page.locator('a[href="/login"]');
     this.passwordStrengthBar = page.locator('[class*="strength"]');
   }

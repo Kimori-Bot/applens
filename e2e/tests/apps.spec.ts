@@ -15,7 +15,7 @@ test.describe('App Management', () => {
       await dashboardPage.navigate();
       
       // Check for dashboard header
-      await expect(page.locator('text=Dashboard')).toBeVisible();
+      await expect(page.locator('h1:has-text("Dashboard")').first()).toBeVisible();
       await expect(page.locator('text=Manage your apps')).toBeVisible();
     });
 
