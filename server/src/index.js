@@ -14,6 +14,7 @@ const automationRoutes = require('./routes/automation');
 const testRoutes = require('./routes/test');
 const webTestRoutes = require('./routes/web-test');
 const devicesRoutes = require('./routes/devices');
+const billingRoutes = require('./routes/billing');
 const { pool, testConnection } = require('./db');
 
 const app = express();
@@ -45,6 +46,9 @@ app.use('/api/auth/register', authLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Stripe webhook (must be before json parser for raw body)
+app.use('/api/billing/webhook', express.raw({ type: 'application/json' }), billingRoutes);
+
 // Request logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
@@ -68,6 +72,7 @@ app.use('/api/automation', automationRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/tests', webTestRoutes);
 app.use('/api/devices', devicesRoutes);
+app.use('/api/billing', billingRoutes);
 
 // 404 handler
 app.use((req, res) => {

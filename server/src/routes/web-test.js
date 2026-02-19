@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { canRunTest, incrementTestCount } = require('./billing');
 
 const router = express.Router();
 
@@ -53,6 +54,16 @@ router.post('/web', async (req, res) => {
     const company = await verifyApiKey(req);
     if (!company) {
       return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    // Check usage limits before running test
+    const usageCheck = await canRunTest(company.id);
+    if (!usageCheck.allowed) {
+      return res.status(403).json({
+        error: 'Test limit reached',
+        message: usageCheck.message,
+        plan: 'upgrade_required'
+      });
     }
 
     // Create test run with test_type = 'web'
@@ -216,6 +227,9 @@ router.post('/web', async (req, res) => {
     // Close browser
     await browser.close();
     browser = null;
+
+    // Record test usage
+    await incrementTestCount(company.id);
 
     // Return results
     res.json({
