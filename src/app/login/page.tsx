@@ -104,6 +104,13 @@ export default function Login() {
                 >
                   Password
                 </label>
+                <Link 
+                  href="/forgot-password"
+                  className="text-sm font-medium"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Forgot password?
+                </Link>
               </div>
               <div className="relative">
                 <Lock 

@@ -3,16 +3,9 @@ import { authenticateToken } from '@/lib/auth';
 import { query, insert } from '@/lib/supabase';
 
 // GET /api/apps - List all apps
+// Requires authentication
 export async function GET(request) {
-  // Demo mode - return sample data if no auth
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return NextResponse.json([
-      { id: 1, name: 'Todo App', url: 'http://localhost:8888', platform: 'web', status: 'completed', config: { lastTest: { steps: 10, healthScore: 100, screenshots: 10, completedAt: new Date().toISOString() } } },
-      { id: 2, name: 'CleanTasks', url: 'https://cleantasks.app', platform: 'android', status: 'pending', config: {} },
-    ]);
-  }
-  
+  // Require authentication
   const auth = await authenticateToken(request);
   
   if (auth.error) {
@@ -35,6 +28,7 @@ export async function GET(request) {
 }
 
 // POST /api/apps - Create new app with token stored in config
+// Requires authentication
 export async function POST(request) {
   const auth = await authenticateToken(request);
   

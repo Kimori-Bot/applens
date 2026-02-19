@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
+import { authenticateToken } from '@/lib/auth';
 
 // In-memory device registry (would be in Redis/DB in production)
+// Note: This is shared across all users in demo mode
 const devices = new Map();
 
+// GET /api/devices - List connected devices
+// Requires authentication
 export async function GET(request) {
+  // Require authentication
+  const auth = await authenticateToken(request);
+  
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   // Get all connected devices
   const deviceList = Array.from(devices.values()).map(d => ({
     deviceId: d.deviceId,
@@ -19,7 +30,15 @@ export async function GET(request) {
   return NextResponse.json({ devices: deviceList });
 }
 
+// POST /api/devices - Register/unregister devices
+// Requires authentication
 export async function POST(request) {
+  const auth = await authenticateToken(request);
+  
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   try {
     const body = await request.json();
     const { type, deviceId, data } = body;
@@ -28,6 +47,7 @@ export async function POST(request) {
       devices.set(deviceId, {
         ...data,
         deviceId,
+        companyId: auth.company.id,
         connectedAt: new Date().toISOString(),
         lastUpdate: new Date().toISOString()
       });

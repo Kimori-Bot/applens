@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
+import { authenticateToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 // GET /api/tests - List test sessions with optional filters
-// GET /api/tests?id=xxx - Get specific test session
+// Requires authentication
 export async function GET(request) {
+  // Require authentication
+  const auth = await authenticateToken(request);
+  
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   try {
-    // Demo mode - return sample data if no auth
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json([
-        { id: 'session_1', appId: 1, appName: 'Todo App', appUrl: 'http://localhost:8888', status: 'completed', startedAt: new Date().toISOString(), completedAt: new Date().toISOString(), steps: 10, screenshots: 10, healthScore: 100, issuesFound: 0 },
-      ]);
-    }
-    
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const appId = searchParams.get('appId');
-    const companyId = searchParams.get('companyId');
     const limit = parseInt(searchParams.get('limit') || '50');
     
     // If ID provided, return specific test
@@ -26,6 +25,7 @@ export async function GET(request) {
         .from('apps')
         .select('*')
         .eq('id', appIdNum)
+        .eq('company_id', auth.company.id) // Ensure user owns the app
         .single();
       
       if (error || !app) {
@@ -45,15 +45,15 @@ export async function GET(request) {
       });
     }
     
-    // Otherwise list all test sessions
+    // Otherwise list all test sessions for this company
     let query = supabase
       .from('apps')
       .select('id, name, url, platform, status, config, created_at, company_id')
+      .eq('company_id', auth.company.id)
       .order('created_at', { ascending: false })
       .limit(limit);
     
     if (appId) query = query.eq('id', parseInt(appId));
-    if (companyId) query = query.eq('company_id', parseInt(companyId));
     
     const { data: apps, error } = await query;
     
@@ -92,10 +92,17 @@ export async function GET(request) {
 }
 
 // POST /api/tests - Save a test as a reusable test case
+// Requires authentication
 export async function POST(request) {
+  const auth = await authenticateToken(request);
+  
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   try {
     const body = await request.json();
-    const { appId, name, description, steps, companyId } = body;
+    const { appId, name, description, steps } = body;
     
     // In production, save to saved_tests table
     // For now, return success
