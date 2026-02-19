@@ -83,6 +83,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'appUrl required' }, { status: 400 });
     }
 
+    // Demo mode - return mock results when no AI services available
+    if (appUrl.includes('demo') || body.demo === true) {
+      const mockSteps = [
+        { step: 1, action: 'LOAD', element: 'page', reason: 'Loading the application' },
+        { step: 2, action: 'CLICK', element: 'Get Started button', reason: 'Starting the onboarding flow' },
+        { step: 3, action: 'INPUT', element: 'email field', reason: 'Entering test email' },
+        { step: 4, action: 'INPUT', element: 'password field', reason: 'Entering test password' },
+        { step: 5, action: 'CLICK', element: 'Login button', reason: 'Submitting credentials' }
+      ];
+      
+      return NextResponse.json({
+        success: true,
+        testId: `demo_${Date.now()}`,
+        testType,
+        goal: goal || 'Explore the app',
+        steps: mockSteps,
+        screenshotPaths: [],
+        videoPath: null,
+        healthScore: 85,
+        generatedTests: mockSteps.map((s, i) => ({
+          id: `test_case_${i + 1}`,
+          name: s.action === 'INPUT' ? `Fill ${s.element}` : `Click ${s.element}`,
+          action: s.action,
+          element: s.element
+        })),
+        reasoning: mockSteps.map(s => s.reason),
+        demo: true
+      });
+    }
+
     const testId = `test_${Date.now()}`;
     const steps = [];
     const screenshots = [];  // base64 for response
